@@ -1,0 +1,11 @@
+const s = document.createElement('script');
+s.src = '/static/lab/vendor/ocr/ort/_ort_umd.js';
+const loaded = new Promise((res, rej) => { s.onload = res; s.onerror = () => rej(new Error('ort 脚本加载失败')); });
+document.head.appendChild(s);
+await loaded;
+const ort = window.ort;
+if (!ort) throw new Error('ort 未挂载');
+ort.env.wasm.wasmPaths = 'https://registry.npmmirror.com/onnxruntime-web/1.17.3/files/dist/';
+const InferenceSession = ort.InferenceSession;
+export { ort, InferenceSession };
+export default ort;

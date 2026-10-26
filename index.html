@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/webp" href="/static/bg/logo.webp">
+    <title>sts Lab - 浏览器里的 AI 工具箱</title>
+    <meta name="description" content="在浏览器本地运行的 AI 工具箱，文件不上传、不注册、不限次数。">
+    <link rel="canonical" href="https://lab.sts.jx.cn">
+    
+    
+    <meta property="og:site_name" content="sts团队">
+<meta property="og:type" content="website">
+<meta property="og:title" content="sts Lab - 浏览器里的 AI 工具箱">
+<meta property="og:description" content="在浏览器本地运行的 AI 工具箱，文件不上传、不注册、不限次数。">
+<meta property="og:url" content="https://lab.sts.jx.cn">
+<meta property="og:image" content="https://sts.jx.cn/static/bg/og-share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="sts Lab - 浏览器里的 AI 工具箱">
+<meta name="twitter:description" content="在浏览器本地运行的 AI 工具箱，文件不上传、不注册、不限次数。">
+<meta name="twitter:image" content="https://sts.jx.cn/static/bg/og-share.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"sts Lab","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script>
+    <link rel="stylesheet" href="/static/lab/css/lab.css?v=1791186845">
+    </head>
+<body data-piko-side="right">
+<svg aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="9.12" x2="12" y2="12"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="i-phones" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+    <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><line x1="4" y1="9" x2="4" y2="15"/><line x1="8" y1="5" x2="8" y2="19"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="16" y1="11" x2="16" y2="13"/><line x1="20" y1="7" x2="20" y2="17"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><line x1="12" y1="8" x2="12" y2="4"/><circle cx="12" cy="3" r="1.2"/><circle cx="9.2" cy="13" r="1"/><circle cx="14.8" cy="13" r="1"/><path d="M9 16.5h6"/></symbol>
+    <symbol id="i-wand" viewBox="0 0 24 24"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M3 21l9-9M12.2 6.2L11 5"/></symbol>
+</svg>
+
+<div class="bg-glow" aria-hidden="true"></div>
+
+<div id="labBoot" aria-hidden="true">
+    <div class="boot-rings"><i></i><i></i></div>
+    <div class="boot-dots"></div>
+    <div class="boot-domain">sts lab</div>
+    <div class="boot-bar idle"><i></i></div>
+    <div class="boot-pct"></div>
+    <div class="boot-sub">正在启动</div>
+</div>
+
+<header class="lab-header">
+    <a class="lab-logo" href="/"><img src="/static/bg/logo.webp" alt="sts">sts<em>&nbsp;lab</em></a>
+    <nav class="lab-nav">
+        <a href="https://sts.jx.cn/">主站</a>
+        <a href="/" class="active">工具箱</a>
+    </nav>
+</header>
+
+<main class="lab-main">
+
+<section class="lab-hero">
+    <span class="kicker"><span class="dot"></span>sts Lab</span>
+    <h1>AI 工具，全部跑在<b>你的浏览器</b>里</h1>
+    <p class="sub">模型下载到本地后离线运行，你的文件不会经过任何服务器。不注册，不限次数。</p>
+    <div class="hero-cta">
+        <a class="btn primary" href="/transcribe"><svg aria-hidden="true" class="ic"><use href="#i-mic"/></svg>语音转文字</a>
+        <a class="btn ghost" href="#why">这是怎么做到的</a>
+    </div>
+</section>
+
+<section>
+    <div class="section-head">
+        <h2>工具</h2>
+        <span>6 个工具，全部本地运行</span>
+    </div>
+    <div class="tool-grid" id="toolGrid">
+        
+        <a class="tool-card" href="/transcribe">
+            <div class="t-ico"><svg aria-hidden="true" class="ic"><use href="#i-mic"/></svg></div>
+            <h3>语音转文字</h3>
+            <p>把音频转成带时间戳的文字，可导出 SRT 字幕。</p>
+            <div class="t-meta">
+                <span class="t-tag live"><span class="live-dot"></span>已上线</span>
+                <span class="t-tag">三档可选 - 用到才下载</span>
+            </div>
+        </a>
+        
+        <a class="tool-card" href="/rmbg">
+            <div class="t-ico"><svg aria-hidden="true" class="ic"><use href="#i-scissors"/></svg></div>
+            <h3>一键抠图</h3>
+            <p>保留主体，背景变透明，输出 PNG。</p>
+            <div class="t-meta">
+                <span class="t-tag live"><span class="live-dot"></span>已上线</span>
+                <span class="t-tag">模型约 7MB，首次用需下载</span>
+            </div>
+        </a>
+        
+        <a class="tool-card" href="/ocr">
+            <div class="t-ico"><svg aria-hidden="true" class="ic"><use href="#i-scan"/></svg></div>
+            <h3>文字识别</h3>
+            <p>从图片里提取可复制的文字。</p>
+            <div class="t-meta">
+                <span class="t-tag live"><span class="live-dot"></span>已上线</span>
+                <span class="t-tag">本地 OCR - 无需上传</span>
+            </div>
+        </a>
+        
+        <a class="tool-card" href="/audioconvert">
+            <div class="t-ico"><svg aria-hidden="true" class="ic"><use href="#i-wave"/></svg></div>
+            <h3>音视频处理</h3>
+            <p>格式转换、裁剪、压缩，支持 mp4 等常见格式。</p>
+            <div class="t-meta">
+                <span class="t-tag live"><span class="live-dot"></span>已上线</span>
+                <span class="t-tag">本地 ffmpeg - 无需上传</span>
+            </div>
+        </a>
+        
+        <a class="tool-card" href="/anime">
+            <div class="t-ico"><svg aria-hidden="true" class="ic"><use href="#i-wand"/></svg></div>
+            <h3>照片动漫化</h3>
+            <p>新海诚、宫崎骏、人像动漫三种风格一键转换。</p>
+            <div class="t-meta">
+                <span class="t-tag live"><span class="live-dot"></span>已上线</span>
+                <span class="t-tag">本地 AnimeGAN - 无需上传</span>
+            </div>
+        </a>
+        
+        <a class="tool-card" href="https://sts.jx.cn/piko">
+            <div class="t-ico"><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg></div>
+            <h3>piko</h3>
+            <p>团队吉祥物，去它的页面和它聊天。</p>
+            <div class="t-meta">
+                <span class="t-tag live"><span class="live-dot"></span>已上线</span>
+                <span class="t-tag">官方吉祥物</span>
+            </div>
+        </a>
+        
+    </div>
+</section>
+
+<section id="why">
+    <div class="section-head">
+        <h2>为什么这么做</h2>
+        <span></span>
+    </div>
+    <div class="why-grid">
+        <div class="why-card">
+            <div class="w-ico"><svg aria-hidden="true" class="ic"><use href="#i-lock"/></svg></div>
+            <h3>数据不出设备</h3>
+            <p>所有处理都发生在浏览器里，服务器只存放模型文件本身。没有上传，也就没有泄露。</p>
+        </div>
+        <div class="why-card">
+            <div class="w-ico"><svg aria-hidden="true" class="ic"><use href="#i-zap"/></svg></div>
+            <h3>能一直免费</h3>
+            <p>计算用的是你自己电脑的算力，我们没有推理成本，所以不需要收费，也不需要限量。</p>
+        </div>
+        <div class="why-card">
+            <div class="w-ico"><svg aria-hidden="true" class="ic"><use href="#i-cloud-off"/></svg></div>
+            <h3>断网也能用</h3>
+            <p>每个工具的模型只下载一次，之后浏览器会记住它，没有网络照样可以打开使用。</p>
+        </div>
+    </div>
+</section>
+
+</main>
+
+<footer class="lab-footer">
+    <p>sts团队
+        <span class="sep">|</span><a href="https://sts.jx.cn/">主站</a>
+        <span class="sep">|</span><a href="https://sts.jx.cn/privacy">隐私政策</a>
+        <span class="sep">|</span><a href="https://sts.jx.cn/thanks">开源鸣谢</a>
+    </p>
+</footer>
+
+<script src="/static/lab/js/lab-boot.js?v=1791186845"></script>
+<script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function () {}); }</script>
+<script src="/static/lab/js/lab-common.js?v=1791186845"></script>
+
+<script>
+(function () {
+    if (window.LabBoot) LabBoot.hide();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "updated": "2026-10-02",
+  "tools": [
+    {
+      "id": "transcribe",
+      "icon": "mic",
+      "status": "live",
+      "name": "语音转文字",
+      "desc": "把音频转成带时间戳的文字，可导出 SRT 字幕。",
+      "meta": "三档可选 - 用到才下载",
+      "url": "/lab/transcribe"
+    },
+    {
+      "id": "rmbg",
+      "icon": "scissors",
+      "status": "live",
+      "name": "一键抠图",
+      "desc": "保留主体，背景变透明，输出 PNG。",
+      "meta": "模型约 7MB，首次用需下载",
+      "url": "/lab/rmbg"
+    },
+    {
+      "id": "ocr",
+      "icon": "scan",
+      "status": "live",
+      "name": "文字识别",
+      "desc": "从图片里提取可复制的文字。",
+      "meta": "本地 OCR - 无需上传",
+      "url": "/lab/ocr"
+    },
+    {
+      "id": "audioconvert",
+      "icon": "wave",
+      "status": "live",
+      "name": "音视频处理",
+      "desc": "格式转换、裁剪、压缩，支持 mp4 等常见格式。",
+      "meta": "本地 ffmpeg - 无需上传",
+      "url": "/lab/audioconvert"
+    },
+    {
+      "id": "anime",
+      "icon": "wand",
+      "status": "live",
+      "name": "照片动漫化",
+      "desc": "新海诚、宫崎骏、人像动漫三种风格一键转换。",
+      "meta": "本地 AnimeGAN - 无需上传",
+      "url": "/lab/anime"
+    },
+    {
+      "id": "piko",
+      "icon": "bot",
+      "status": "live",
+      "name": "piko",
+      "desc": "团队吉祥物，去它的页面和它聊天。",
+      "meta": "官方吉祥物",
+      "url": "/piko"
+    }
+  ]
+}
