@@ -455,3 +455,53 @@ var LabPiko = window.LabPiko || { set: function () {} };
     updateHint();
     startEngine(currentModelId());
 })();
+
+/* i18n: EN sweep for dynamically rendered strings (sts i18n campaign) */
+(function () {
+    if (!window.__stsEN) return;
+    var EN = {
+        '速度优先': 'Speed first', '均衡': 'Balanced', '精准优先': 'Accuracy first',
+        '当前模型 ': 'Current model ', '），第一次使用需下载，之后自动缓存。': '). First use downloads it; cached afterwards.',
+        '正在加载引擎': 'Loading engine', '正在下载模型，只需一次': 'Downloading model - one time only',
+        '正在下载模型': 'Downloading model', '本地资源缺失，改用镜像源': 'Local resource missing - switching to mirror',
+        '切换镜像源': 'Switching to mirror', '从本地缓存载入模型': 'Loading model from local cache',
+        '本地缓存载入': 'From local cache', '正在初始化模型': 'Initializing model',
+        '准备就绪': 'Ready', '正在下载模型 ': 'Downloading model ', '），只需一次': '), one time only',
+        '就绪，拖入音频即可开始': 'Ready - drop an audio file to start', '就绪': 'Ready',
+        '正在转写 ': 'Transcribing ', '转写完成，共 ': 'Transcription complete, ', ' 段': ' segments',
+        '<svg class="ic"><use href="#i-wave"/></svg>再转一次': '<svg class="ic"><use href="#i-wave"/></svg>Transcribe again',
+        '未知错误': 'Unknown error', '模型文件还没准备好，请几分钟后重试': 'Model files are not ready yet - try again in a few minutes',
+        '出错了：': 'Something went wrong: ', '正在切换模型': 'Switching model',
+        '正在读取音频': 'Reading audio',
+        '<svg class="ic"><use href="#i-wave"/></svg>开始转写': '<svg class="ic"><use href="#i-wave"/></svg>Start transcription',
+        '音频超过五分钟，只取前五分钟': 'Audio exceeds five minutes - only the first five will be used',
+        '读取完成，点开始转写': 'Loaded - tap Start transcription',
+        '打不开这个音频文件': 'Cannot open this audio file', '正在转写': 'Transcribing',
+        '转写失败：': 'Transcription failed: ', '已复制': 'Copied', '复制': 'Copy',
+        '这个浏览器不支持录音': 'This browser does not support recording',
+        '<span class="rec-dot"></span>录音': '<span class="rec-dot"></span>Record',
+        '录音-': 'recording-', '停止录音': 'Stop recording', '录音中': 'Recording',
+        '拿不到麦克风权限': 'Microphone permission denied'
+    };
+    var busy = false;
+    function sweep() {
+        var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var n;
+        while ((n = w.nextNode())) {
+            var k = n.nodeValue.trim();
+            if (k && EN[k] !== undefined) n.nodeValue = n.nodeValue.replace(k, EN[k]);
+        }
+    }
+    try { sweep(); } catch (e) {}
+    window.addEventListener('load', function () {
+        try { sweep(); } catch (e) {}
+        setTimeout(function () { try { sweep(); } catch (e) {} }, 900);
+    });
+    try {
+        new MutationObserver(function () {
+            if (busy) return;
+            busy = true;
+            try { sweep(); } catch (e) {} finally { busy = false; }
+        }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    } catch (e) {}
+})();

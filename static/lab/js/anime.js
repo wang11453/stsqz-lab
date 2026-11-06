@@ -330,3 +330,38 @@ var LabPiko = window.LabPiko || { set: function () {} };
 
     try { LabBoot.progress(1, '就绪'); setTimeout(LabBoot.hide, 300); } catch (e) {}
 })();
+
+/* i18n: EN sweep for dynamically rendered strings (sts i18n campaign) */
+(function () {
+    if (!window.__stsEN) return;
+    var EN = {
+        '不支持的格式 .': 'Unsupported format .',
+        '转换后显示在这里': 'Result shows up here',
+        '模型包下载失败 ': 'Model pack download failed ', '模型包为空': 'Model pack is empty',
+        '模型缺失 ': 'Model missing ', '准备模型…': 'Preparing model…',
+        '下载模型 ': 'Downloading model ', '正在转换…': 'Converting…',
+        '完成，可下载 PNG': 'Done - PNG ready to download',
+        '出错了：': 'Something went wrong: ', '就绪': 'Ready'
+    };
+    var busy = false;
+    function sweep() {
+        var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var n;
+        while ((n = w.nextNode())) {
+            var k = n.nodeValue.trim();
+            if (k && EN[k] !== undefined) n.nodeValue = n.nodeValue.replace(k, EN[k]);
+        }
+    }
+    try { sweep(); } catch (e) {}
+    window.addEventListener('load', function () {
+        try { sweep(); } catch (e) {}
+        setTimeout(function () { try { sweep(); } catch (e) {} }, 900);
+    });
+    try {
+        new MutationObserver(function () {
+            if (busy) return;
+            busy = true;
+            try { sweep(); } catch (e) {} finally { busy = false; }
+        }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    } catch (e) {}
+})();

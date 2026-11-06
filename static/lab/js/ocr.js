@@ -440,3 +440,45 @@ var LabPiko = window.LabPiko || { set: function () {} };
         term('引擎加载失败：' + (e && e.message ? e.message : e));
     });
 })();
+
+/* i18n: EN sweep for dynamically rendered strings (sts i18n campaign) */
+(function () {
+    if (!window.__stsEN) return;
+    var EN = {
+        '正在加载引擎': 'Loading engine', '正在加载运算库…': 'Loading compute library…',
+        '正在加载图像库…': 'Loading image library…', 'clipper 加载失败': 'Failed to load clipper',
+        '命中本机缓存': 'Local cache hit', '模型来自本机缓存，无需下载': 'Model came from local cache - no download needed',
+        '首次使用下载约 15MB 模型（之后走本机缓存）': 'First use downloads ~15MB of models (cached locally afterwards)',
+        '正在下载模型 ': 'Downloading model ', '正在初始化模型…': 'Initializing model…',
+        '正在初始化': 'Initializing', '就绪': 'Ready', '引擎加载失败': 'Engine failed to load',
+        '正在识别…': 'Recognizing…', '正在检测文字区域…': 'Detecting text regions…',
+        '检测完成，解析区域…': 'Detection done - parsing regions…',
+        '检测到 ': 'Detected ', ' 块区域，正在识别文字…': ' regions - reading text…',
+        '识别中 ': 'Recognizing ', '（没有识别到文字，试试更清晰的图）': '(No text found - try a sharper image)',
+        '完成 - ': 'Done - ', ' 段，耗时 ': ' segments in ', '识别失败：': 'Recognition failed: ',
+        '不支持的格式 .': 'Unsupported format .', '待命': 'Standby', '选文件后开始': 'Pick a file to start',
+        '已复制': 'Copied', '复制': 'Copy', '待命 - 选图片后开始': 'Standby - pick an image to start',
+        '引擎加载失败：': 'Engine failed to load: '
+    };
+    var busy = false;
+    function sweep() {
+        var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var n;
+        while ((n = w.nextNode())) {
+            var k = n.nodeValue.trim();
+            if (k && EN[k] !== undefined) n.nodeValue = n.nodeValue.replace(k, EN[k]);
+        }
+    }
+    try { sweep(); } catch (e) {}
+    window.addEventListener('load', function () {
+        try { sweep(); } catch (e) {}
+        setTimeout(function () { try { sweep(); } catch (e) {} }, 900);
+    });
+    try {
+        new MutationObserver(function () {
+            if (busy) return;
+            busy = true;
+            try { sweep(); } catch (e) {} finally { busy = false; }
+        }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    } catch (e) {}
+})();

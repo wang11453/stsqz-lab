@@ -343,3 +343,43 @@ var LabPiko = window.LabPiko || { set: function () {} };
     setRunEnabled(false);
     startEngine();
 })();
+
+/* i18n: EN sweep for dynamically rendered strings (sts i18n campaign) */
+(function () {
+    if (!window.__stsEN) return;
+    var EN = {
+        '正在下载模型': 'Downloading model', '命中本地缓存': 'Local cache hit',
+        '主源不可用，切换镜像': 'Primary source unavailable - switching to mirror',
+        '正在抠图': 'Cutting out the subject', '本站': 'this site',
+        '模型源 ': 'Model source ', ' / 运行时 ': ' / runtime ',
+        '出错了：': 'Something went wrong: ',
+        '模型文件还没准备好，请几分钟后重试': 'Model files are not ready yet - try again in a few minutes',
+        '正在加载引擎': 'Loading engine', '正在初始化模型': 'Initializing model',
+        '请选择图片文件': 'Please pick an image file',
+        '图片读取失败，请换一张 PNG 或 JPG 试试': 'Could not read the image - try another PNG or JPG',
+        '模型还没就绪，稍等一下': 'Model not ready yet - one moment',
+        '完成，可下载 PNG': 'Done - PNG ready to download',
+        '结果解码失败': 'Failed to decode the result', '结果为空': 'Empty result'
+    };
+    var busy = false;
+    function sweep() {
+        var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var n;
+        while ((n = w.nextNode())) {
+            var k = n.nodeValue.trim();
+            if (k && EN[k] !== undefined) n.nodeValue = n.nodeValue.replace(k, EN[k]);
+        }
+    }
+    try { sweep(); } catch (e) {}
+    window.addEventListener('load', function () {
+        try { sweep(); } catch (e) {}
+        setTimeout(function () { try { sweep(); } catch (e) {} }, 900);
+    });
+    try {
+        new MutationObserver(function () {
+            if (busy) return;
+            busy = true;
+            try { sweep(); } catch (e) {} finally { busy = false; }
+        }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    } catch (e) {}
+})();
