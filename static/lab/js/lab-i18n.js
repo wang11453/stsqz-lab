@@ -9,6 +9,7 @@
         '隐私政策': 'Privacy Policy', '开源鸣谢': 'Open-source credits', 'sts团队': 'sts team',
         'AI 工具，全部跑在': 'AI tools, all running in', '你的浏览器': 'your browser', '里': '',
         '模型下载到本地后离线运行，你的文件不会经过任何服务器。': 'Models download locally and run offline - your files never touch any server.',
+        '模型下载到本地后离线运行，你的文件不会经过任何服务器。不注册，不限次数。': 'Models download locally and run offline - your files never touch any server. No sign-up, no limits.',
         '这是怎么做到的': 'How is this done', '6 个工具，全部本地运行': 'Six tools, all running locally',
         '把音频转成带时间戳的文字，可导出 SRT 字幕。': 'Audio to timestamped text, with SRT subtitle export.',
         '三档可选 - 用到才下载': 'Three tiers - downloaded only when used',
@@ -71,6 +72,15 @@
         }
     }
     try { sweep(); } catch (e) {}
+    try {
+        var AT = { '移除': 'Remove' };
+        document.querySelectorAll('[title],[aria-label]').forEach(function (e) {
+            ['title', 'aria-label'].forEach(function (a) {
+                var v = e.getAttribute(a);
+                if (v && AT[v] !== undefined) e.setAttribute(a, AT[v]);
+            });
+        });
+    } catch (e) {}
     window.addEventListener('load', function () {
         try { sweep(); } catch (e) {}
         setTimeout(function () { try { sweep(); } catch (e) {} }, 900);
