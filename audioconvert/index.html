@@ -24,7 +24,17 @@
 <meta name="twitter:image" content="https://sts.jx.cn/static/bg/og-share.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"媒体处理器","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script>
     <link rel="stylesheet" href="/static/lab/css/lab.css?v=1791186845">
-    </head>
+    <script>
+(function(){
+var lang=(navigator.language||navigator.userLanguage||'zh').toLowerCase();
+window.L=function(zh,en){return window.__stsEN?en:zh;};
+if(lang.indexOf('zh')===0)return;
+window.__stsEN=true;
+document.documentElement.setAttribute('data-lang','en');
+document.documentElement.lang='en';
+setTimeout(function(){document.documentElement.removeAttribute('data-lang');},900);
+})();
+</script></head>
 <body data-piko-side="right">
 <svg aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">
     <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></symbol>
@@ -71,6 +81,7 @@
 <main class="lab-main">
 
 <style>
+html[data-lang="en"] body { visibility: hidden; }
 :root {
     --bg: #0A0E12;
     --panel: rgba(255, 255, 255, 0.02);
@@ -451,5 +462,21 @@ body {
 <script>window.LAB_V="1791186845";</script>
 <script type="module" src="/static/lab/js/audio.js?v=1791186845"></script>
 
-<img src="https://sts.jx.cn/api/exp-beacon?act=tool" alt="" aria-hidden="true" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></body>
+<img src="https://sts.jx.cn/api/exp-beacon?act=tool" alt="" aria-hidden="true" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><script>
+(function(){
+"use strict";
+if(!window.__stsEN)return;
+try{
+document.title="sts Lab - AI Toolbox in Your Browser";
+var MAP={"sts Lab - 浏览器里的 AI 工具箱": "sts Lab - AI Toolbox in Your Browser", "浏览器里的 AI 工具箱": "AI toolbox in your browser", "sts 实验室": "sts Lab", "返回主站": "Back to main site", "工具": "Tools", "指南": "Guide", "开源": "Open source", "语音转文字": "Transcribe", "一键抠图": "Background Remover", "文字识别": "OCR", "音视频处理": "Audio & Video", "照片动漫化": "Anime Photo", "把录音变成带时间戳的文字稿，支持导出字幕": "Turn recordings into timestamped text, with subtitle export", "上传照片，人像之外全部透明，抠完直接下载 PNG": "Upload a photo, everything but the subject goes transparent - download the PNG directly", "拍照识字，本地识别，准确率看得见": "Snap text, recognize locally - accuracy you can verify", "格式转换、压缩、裁剪、抽音频，常用任务一站搞定": "Convert, compress, trim, extract audio - common jobs in one place", "一张照片，三种动漫风格，全都本地生成": "One photo, three anime styles, all generated locally", "进入工具": "Open tool", "使用指南": "Guide", "断网也能用": "Works offline", "数据不出设备": "Data never leaves your device", "三大承诺": "Three promises", "数据不出设备。": "Your data never leaves your device.", "能一直免费。": "Free, forever.", "断网也能用。": "Works offline.", "本地推理": "Local inference", "所有模型": "All models", "浏览器里跑": "run in your browser","主站":"Main site","工具箱":"Toolbox","返回工具箱":"Back to toolbox","全部跑在你的浏览器里":"Everything runs in your browser","模型下载到本地后离线运行":"Models download locally and run offline","你的文件不会经过任何服务器":"Your files never touch any server","不注册":"No sign-up","不限次数":"Unlimited use","这是怎么做到的":"How is this possible","个工具":" tools","正在加载引擎":"Loading the engine","把音频转成带时间戳的文字，全程在本地完成":"Turn audio into timestamped text - entirely on your machine","拖入音频，或点击选择":"Drop an audio file, or click to choose","支持":"Supports","最长五分钟":"up to five minutes","把图片里的文字变成可复制的文本，全程在本地完成":"Turn text in images into copyable text - entirely on your machine","拖入图片，或点击选择":"Drop an image, or click to choose","清晰印刷体效果最佳":"Clear printed text works best","开始转换":"Start converting","开始识别":"Start recognizing","开始抠图":"Start removing","开始动漫化":"Start animating","开始转写":"Start transcribing","下载":"Download","清空":"Clear","处理中":"Processing","完成":"Done","失败":"Failed","重新开始":"Start over","选择文件":"Choose a file","点击或拖拽":"Click or drop","格式":"Format","大小":"Size","时长":"Duration","预览":"Preview","结果":"Result","复制":"Copy","字幕":"Subtitles","导出 SRT":"Export SRT","-quality":"-quality","模型下载到本地后离线运行，你的文件不会经过任何服务器":"Models download locally and run offline - your files never touch any server","个工具，全部本地运行":" tools, all running locally","把音频转成带时间戳的文字，可导出":"Turn audio into timestamped text, exportable as","已上线":"Live","越大越准，也越慢":"bigger = more accurate but slower","速度优先":"Speed first","均衡":"Balanced","正在加载图像库":"Loading the image library","第一次使用会下载约":"First use downloads about","模型，之后自动缓存，无需重复下载":"of models, cached afterwards - no repeat downloads","支持中英文混排":"Supports mixed Chinese and English"};
+var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
+var n;
+while((n=w.nextNode())){
+  var k=n.nodeValue.trim();
+  if(k&&MAP[k]!==undefined)n.nodeValue=n.nodeValue.replace(k,MAP[k]);
+}
+}catch(e){}
+finally{document.documentElement.removeAttribute("data-lang");}
+})();
+</script></body>
 </html>
