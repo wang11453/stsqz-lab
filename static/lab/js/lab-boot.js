@@ -53,7 +53,7 @@
             if (t) {
                 var d = document.createElement('div');
                 d.className = 'l-err';
-                d.textContent = '[ERR] 页面脚本没有启动（多半是浏览器缓存了旧版本），请按 Ctrl+Shift+R 强制刷新。';
+                d.textContent = window.__stsEN ? '[ERR] Page scripts did not start (the browser likely cached an old version) - press Ctrl+Shift+R to hard-refresh.' : '[ERR] 页面脚本没有启动（多半是浏览器缓存了旧版本），请按 Ctrl+Shift+R 强制刷新。';
                 t.appendChild(d);
             }
             hide();
