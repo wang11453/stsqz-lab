@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lab.sts.jx.cn</loc>
+    <loc>https://lab.stsqz.com</loc>
     <lastmod>2026-10-24</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lab.sts.jx.cn/transcribe</loc>
+    <loc>https://lab.stsqz.com/transcribe</loc>
     <lastmod>2026-10-24</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://lab.sts.jx.cn/rmbg</loc>
+    <loc>https://lab.stsqz.com/rmbg</loc>
     <lastmod>2026-10-24</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://lab.sts.jx.cn/audioconvert</loc>
+    <loc>https://lab.stsqz.com/audioconvert</loc>
     <lastmod>2026-10-24</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://lab.sts.jx.cn/ocr</loc>
+    <loc>https://lab.stsqz.com/ocr</loc>
     <lastmod>2026-10-24</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://lab.sts.jx.cn/anime</loc>
+    <loc>https://lab.stsqz.com/anime</loc>
     <lastmod>2026-10-24</lastmod>
     <priority>0.6</priority>
   </url>
