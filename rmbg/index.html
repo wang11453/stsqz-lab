@@ -29,6 +29,7 @@
 var lang=(navigator.language||navigator.userLanguage||'zh').toLowerCase();
 window.L=function(zh,en){return window.__stsEN?en:zh;};
 if(lang.indexOf('zh')===0)return;
+if(/bot|crawl|spider|slurp|headless|phantom|puppeteer|playwright|prerender|lighthouse|wget|curl|python-requests|facebookexternalhit|twitterbot|whatsapp|telegram|discord|slack|linkedin|preview/i.test(navigator.userAgent||''))return;/* 爬虫/自动化一律中文 */
 window.__stsEN=true;
 document.documentElement.setAttribute('data-lang','en');
 document.documentElement.lang='en';
