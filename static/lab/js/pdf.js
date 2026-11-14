@@ -831,6 +831,7 @@ function buildOrgThumbs() {
         if (isNaN(idx) || !state.org.pages[idx]) return;
         orgPush();
         state.org.pages[idx].rot = (state.org.pages[idx].rot + 90) % 360;
+        state.orgSel = new Set([idx]);
         buildOrgThumbs();
     };
     updateSelBar();
