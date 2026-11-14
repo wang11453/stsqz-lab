@@ -192,6 +192,7 @@ function chipEvents() {
         if (act === 'del') {
             const f = state.files[i];
             if (f.jsDoc) f.jsDoc.destroy();
+            if (f.objUrl) URL.revokeObjectURL(f.objUrl);
             state.files.splice(i, 1);
         } else if (act === 'up' && i > 0) {
             [state.files[i - 1], state.files[i]] = [state.files[i], state.files[i - 1]];
