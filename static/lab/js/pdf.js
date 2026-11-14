@@ -794,6 +794,10 @@ function buildOrgThumbs() {
     };
     grid.ondragover = e => {
         e.preventDefault();
+        const rect = grid.getBoundingClientRect();
+        const edge = 48;
+        if (e.clientY < rect.top + edge) grid.scrollTop -= (rect.top + edge - e.clientY) * 0.18;
+        else if (e.clientY > rect.bottom - edge) grid.scrollTop += (e.clientY - (rect.bottom - edge)) * 0.18;
         const th = e.target.closest('.thumb');
         grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over', 'dnd-line'));
         if (th && grid.dataset.dragIdx !== th.dataset.orgIdx) th.classList.add('drag-over', 'dnd-line');
@@ -1389,7 +1393,7 @@ function showResults(results) {
     const orig = results.reduce((s, r) => s + (r.orig || 0), 0);
     info.innerHTML =
         '<div class="out-row"><span>' + L('产物', 'Output') + '</span><strong>' + results.length + L(' 个文件 - 共 ', ' file(s) - ') + fmtSize(total) + '</strong></div>' +
-        (orig ? '<div class="out-row"><span>' + L('压缩比', 'Reduction') + '</span><strong class="' + (total <= orig ? 'delta-less' : 'delta-more') + '">' + Math.round(total / orig * 100) + '%（' + fmtSize(orig) + ' → ' + fmtSize(total) + '）</strong></div>' : '');
+        (orig ? '<div class="out-row"><span>' + (total <= orig ? L('压缩比', 'Reduction') : L('体积变化', 'Size change')) + '</span><strong class="' + (total <= orig ? 'delta-less' : 'delta-more') + '">' + Math.round(total / orig * 100) + '%（' + fmtSize(orig) + ' → ' + fmtSize(total) + '）</strong></div>' : '');
     $('dlBtn').disabled = false;
     setStatus(L('完成', 'Done'), 'ok');
     setTimeout(clearStatus, 3000);
