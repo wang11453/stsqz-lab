@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-02",
+  "updated": "2026-11-14",
   "tools": [
     {
       "id": "transcribe",
@@ -45,6 +45,15 @@
       "desc": "新海诚、宫崎骏、人像动漫三种风格一键转换。",
       "meta": "本地 AnimeGAN - 无需上传",
       "url": "/lab/anime"
+    },
+    {
+      "id": "pdf",
+      "icon": "file",
+      "status": "live",
+      "name": "PDF 工坊",
+      "desc": "合并、拆分、重排、压缩、互转、水印、页码，一个工具全包。",
+      "meta": "本地处理 - 无需上传",
+      "url": "/lab/pdf"
     },
     {
       "id": "piko",

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lab-tool="1">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/webp" href="/static/bg/logo.webp">
+    <title>PDF 工坊 - sts Lab</title>
+    <meta name="description" content="合并、拆分、重排、压缩、图片互转、水印、页码，一个工具全包。全程在本地完成，文件不会上传。">
+    <link rel="canonical" href="https://lab.stsqz.com/pdf">
+
+
+    <meta property="og:site_name" content="sts团队">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PDF 工坊 - sts Lab">
+<meta property="og:description" content="合并、拆分、重排、压缩、图片互转、水印、页码，一个工具全包。全程在本地完成，文件不会上传。">
+<meta property="og:url" content="https://lab.stsqz.com/pdf">
+<meta property="og:image" content="https://stsqz.com/static/bg/og-share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PDF 工坊 - sts Lab">
+<meta name="twitter:description" content="合并、拆分、重排、压缩、图片互转、水印、页码，一个工具全包。全程在本地完成，文件不会上传。">
+<meta name="twitter:image" content="https://stsqz.com/static/bg/og-share.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"PDF 工坊","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script>
+    <link rel="stylesheet" href="/static/lab/css/lab.css?v=1791186845">
+    <script>
+(function(){
+var lang=(navigator.language||navigator.userLanguage||'zh').toLowerCase();
+window.L=function(zh,en){return window.__stsEN?en:zh;};
+if(lang.indexOf('zh')===0)return;
+if(/bot|crawl|spider|slurp|headless|phantom|puppeteer|playwright|prerender|lighthouse|wget|curl|python-requests|facebookexternalhit|twitterbot|whatsapp|telegram|discord|slack|linkedin|preview/i.test(navigator.userAgent||''))return;
+window.__stsEN=true;
+document.documentElement.setAttribute('data-lang','en');
+document.documentElement.lang='en';
+setTimeout(function(){document.documentElement.removeAttribute('data-lang');},900);
+})();
+</script></head>
+<body data-piko-side="right">
+<svg aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+    <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="9.12" x2="12" y2="12"/></symbol>
+    <symbol id="i-minimize" viewBox="0 0 24 24"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+</svg>
+
+<div class="bg-glow" aria-hidden="true"></div>
+
+<div id="labBoot" aria-hidden="true">
+    <div class="boot-rings"><i></i><i></i></div>
+    <div class="boot-dots"></div>
+    <div class="boot-domain">sts lab</div>
+    <div class="boot-bar idle"><i></i></div>
+    <div class="boot-pct"></div>
+    <div class="boot-sub">正在启动</div>
+</div>
+
+<header class="lab-header">
+    <a class="lab-logo" href="/"><img src="/static/bg/logo.webp" alt="sts">sts<em>&nbsp;lab</em></a>
+    <nav class="lab-nav">
+        <a href="https://stsqz.com/">主站</a>
+        <a href="/" >工具箱</a>
+    </nav>
+</header>
+
+<main class="lab-main">
+
+<style>
+html[data-lang="en"] body { visibility: hidden; }
+body {
+    background: #050505;
+    font-family: Poppins, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    color: #fafafa;
+}
+::selection { background: rgba(255, 255, 255, 0.9); color: #050505; }
+::-webkit-scrollbar-track { background: #050505; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border: 2px solid #050505; }
+.bg-glow { background: radial-gradient(ellipse 70% 42% at 50% 108%, rgba(255, 255, 255, 0.08), transparent 70%); }
+.lab-header { background: rgba(5, 5, 5, 0.78); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.lab-logo { color: #fafafa; }
+.lab-logo img { filter: brightness(1.05); }
+.lab-nav a { color: rgba(255, 255, 255, 0.55); }
+.lab-nav a:hover, .lab-nav a.active { color: #fff; background: rgba(255, 255, 255, 0.07); }
+.lab-footer { border-top: 1px solid rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.35); }
+#labBoot { background: #050505; }
+#labBoot .boot-rings i:nth-child(1) { border-color: rgba(255, 255, 255, 0.12); border-top-color: rgba(255, 255, 255, 0.85); }
+#labBoot .boot-rings i:nth-child(2) { border-color: rgba(255, 255, 255, 0.08); border-bottom-color: rgba(255, 255, 255, 0.5); }
+#labBoot .boot-dots i { background: rgba(255, 255, 255, 0.5); }
+#labBoot .boot-bar i { background: #fff; }
+#labBoot .boot-domain { color: rgba(255, 255, 255, 0.55); text-shadow: none; }
+#labBoot .boot-pct { color: rgba(255, 255, 255, 0.8); }
+.back-line a { color: rgba(255, 255, 255, 0.45); }
+.back-line a:hover { color: #fff; }
+.pdf-wrap { grid-template-columns: 380px 1fr; align-items: start; }
+.panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(255, 255, 255, 0.015) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 28px;
+    padding: 30px;
+}
+.page-title h1 { font-size: 22px; font-weight: 500; color: #fff; letter-spacing: -0.01em; }
+.page-title p { color: rgba(255, 255, 255, 0.5); font-weight: 300; }
+.dropzone {
+    border: 1.5px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+}
+.dropzone:hover, .dropzone.drag { border-color: rgba(255, 255, 255, 0.45); background: rgba(255, 255, 255, 0.05); }
+.dropzone .ic { color: rgba(255, 255, 255, 0.5); }
+.dropzone:hover .ic, .dropzone.drag .ic { color: #fff; }
+.dz-main { color: #fff; }
+.dz-sub { color: rgba(255, 255, 255, 0.4); }
+.file-list { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
+.file-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px; padding: 8px 10px; font-size: 12.5px;
+}
+.file-chip .ic { color: rgba(255, 255, 255, 0.5); flex-shrink: 0; }
+.file-chip .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255, 255, 255, 0.85); }
+.file-chip .drag-handle { cursor: grab; display: flex; color: rgba(255, 255, 255, 0.3); }
+.file-chip .fsize { color: rgba(255, 255, 255, 0.4); flex-shrink: 0; font-size: 11px; }
+.file-chip button {
+    background: none; border: none; cursor: pointer; padding: 3px;
+    color: rgba(255, 255, 255, 0.45); border-radius: 8px; display: flex;
+}
+.file-chip button:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.file-chip .drag-handle { cursor: grab; }
+.file-chip.drag-src { opacity: 0.35; }
+.file-chip.drag-over { border-color: rgba(255, 255, 255, 0.45); }
+.mode-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.mode-tabs button {
+    display: flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.6); font-size: 12.5px; font-weight: 400;
+    border-radius: 999px; padding: 7px 14px; cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.mode-tabs button .ic { width: 14px; height: 14px; }
+.mode-tabs button:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.3); color: #fff; }
+.mode-tabs button.active { background: #fff; border-color: #fff; color: #050505; font-weight: 500; }
+.mode-tabs button:disabled { opacity: 0.35; cursor: not-allowed; }
+.opt-block { display: none; flex-direction: column; gap: 14px; padding-top: 4px; }
+.opt-block.show { display: flex; }
+.opt-label { font-size: 12px; color: rgba(255, 255, 255, 0.5); font-weight: 400; }
+.opt-input, .opt-select {
+    width: 100%; box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px; padding: 9px 12px; font-size: 13px;
+    color: #fafafa; outline: none; font-family: inherit; font-weight: 300;
+    transition: border-color 0.15s;
+}
+.opt-input:focus, .opt-select:focus { border-color: rgba(255, 255, 255, 0.35); }
+.opt-input:disabled { opacity: 0.4; cursor: not-allowed; }
+.opt-row { display: flex; gap: 10px; }
+.opt-row > div { flex: 1; }
+.seg { display: flex; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 999px; overflow: hidden; }
+.seg button {
+    flex: 1; background: none; border: none; color: rgba(255, 255, 255, 0.55);
+    font-size: 12px; padding: 7px 4px; cursor: pointer; font-family: inherit;
+}
+.seg button.active { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.slider-row { display: flex; align-items: center; gap: 10px; }
+.slider-row input[type="range"] { flex: 1; accent-color: #fff; }
+.slider-val { font-size: 12px; color: rgba(255, 255, 255, 0.75); min-width: 40px; text-align: right; }
+.pos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 190px; }
+.pos-grid button {
+    aspect-ratio: 1.6; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12);
+    background: none; cursor: pointer; position: relative;
+}
+.pos-grid button i {
+    position: absolute; font-style: normal; font-size: 11px; color: rgba(255, 255, 255, 0.5);
+}
+.pos-grid button.active { border-color: #fff; background: rgba(255, 255, 255, 0.1); }
+.pos-grid button.active i { color: #fff; }
+.btn-primary {
+    background: #fff; color: #050505; font-weight: 500;
+    border-radius: 999px; border: none; width: 100%;
+    padding: 12px; font-size: 14px; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.2s ease; cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) { transform: scale(1.02); background: #fff; }
+.btn-primary:active:not(:disabled) { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.status-line { color: rgba(255, 255, 255, 0.55); font-size: 12.5px; font-weight: 300; }
+.status-line.ok { color: rgba(255, 255, 255, 0.85); }
+.status-line.err { color: #ff9d9d; }
+.status-line .bar { display: block; height: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); margin-top: 8px; overflow: hidden; }
+.status-line .bar i { display: block; height: 100%; width: 0; background: #fff; transition: width 0.2s; }
+.hint { color: rgba(255, 255, 255, 0.35); font-weight: 300; font-size: 12px; line-height: 1.7; }
+.hint .ic { width: 13px; height: 13px; vertical-align: -2px; margin-right: 4px; color: rgba(255, 255, 255, 0.4); }
+.res-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.res-head h2 { font-size: 16px; font-weight: 500; color: #fff; }
+.res-actions { display: flex; gap: 8px; align-items: center; }
+.res-actions button {
+    display: flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.7); border-radius: 999px;
+    padding: 7px 14px; font-size: 12.5px; font-family: inherit; cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+.res-actions button:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.35); color: #fff; }
+.res-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+.empty { color: rgba(255, 255, 255, 0.3); font-weight: 300; text-align: center; padding: 60px 0; }
+.empty .ic { width: 34px; height: 34px; color: rgba(255, 255, 255, 0.14); display: block; margin: 0 auto 12px; }
+.thumb-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 12px; max-height: 620px; overflow-y: auto; padding: 2px;
+}
+.thumb {
+    position: relative; border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    aspect-ratio: 0.707; cursor: pointer;
+    transition: border-color 0.15s;
+}
+.thumb:hover { border-color: rgba(255, 255, 255, 0.35); }
+.thumb.drag-src { opacity: 0.3; }
+.thumb.drag-over { border-color: #fff; }
+.thumb canvas, .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.thumb .t-num {
+    position: absolute; left: 6px; bottom: 6px;
+    background: rgba(5, 5, 5, 0.72); border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.8); font-size: 10px; border-radius: 999px; padding: 1px 7px;
+}
+.thumb .t-mark {
+    position: absolute; right: 6px; top: 6px;
+    background: rgba(5, 5, 5, 0.72); border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7); font-size: 10px; border-radius: 999px; padding: 1px 7px;
+    display: none;
+}
+.thumb.rot90 .t-mark, .thumb.rot180 .t-mark, .thumb.rot270 .t-mark { display: block; }
+.thumb .t-acts {
+    position: absolute; inset: auto 0 0 0; display: none; justify-content: center; gap: 6px; padding: 6px;
+    background: linear-gradient(transparent, rgba(5, 5, 5, 0.85));
+}
+.thumb:hover .t-acts { display: flex; }
+.thumb:hover .t-num { opacity: 0; }
+.thumb .t-acts button {
+    background: rgba(5, 5, 5, 0.72); border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.8); border-radius: 999px; width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.thumb .t-acts button:hover { border-color: rgba(255, 255, 255, 0.5); color: #fff; }
+.thumb .t-acts button .ic { width: 13px; height: 13px; }
+.thumb-wrap { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.thumb-wrap .f-tag {
+    font-size: 10.5px; color: rgba(255, 255, 255, 0.45); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; text-align: center;
+}
+.out-info { display: flex; flex-direction: column; gap: 8px; }
+.out-row { display: flex; justify-content: space-between; font-size: 12.5px; color: rgba(255, 255, 255, 0.55); }
+.out-row strong { color: #fafafa; font-weight: 500; }
+.out-row .delta-less { color: #9fe0b0; }
+.out-row .delta-more { color: rgba(255, 255, 255, 0.5); }
+.ui-spin { position: relative; pointer-events: none; color: transparent !important; }
+.ui-spin::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    width: 13px; height: 13px; margin: -7px 0 0 -7px;
+    border-radius: 50%; border: 2px solid rgba(5, 5, 5, 0.2);
+    border-top-color: #050505; animation: pdf-spin 620ms linear infinite;
+}
+@keyframes pdf-spin { to { transform: rotate(360deg); } }
+.thumb-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.2); font-size: 11px; }
+@media (max-width: 980px) { .pdf-wrap { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+    .panel { padding: 20px; border-radius: 22px; }
+    .thumb-grid { max-height: 480px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-spin::after { animation: none; }
+    .btn-primary, .thumb { transition: none; }
+}
+</style>
+<p class="back-line"><a href="/"><svg aria-hidden="true" class="ic"><use href="#i-back"/></svg>返回工具箱</a></p>
+
+<div class="tool-wrap pdf-wrap">
+    <section class="panel">
+        <div class="page-title">
+            <h1>PDF 工坊</h1>
+            <p>合并 - 拆分 - 重排 - 压缩 - 互转 - 水印 - 页码，全程本地完成。</p>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+            <svg aria-hidden="true" class="ic"><use href="#i-upload"/></svg>
+            <div class="dz-main">拖入 PDF 或图片，可多选</div>
+            <div class="dz-sub">支持 pdf png jpg webp bmp gif，单文件不超过 200MB</div>
+        </div>
+        <input type="file" id="fileInput" accept="application/pdf,image/png,image/jpeg,image/webp,image/bmp,image/gif" hidden multiple>
+
+        <div class="file-list" id="fileList" style="display:none;"></div>
+
+        <div class="mode-tabs" id="modeTabs" style="margin-top:16px;">
+            <button data-mode="merge" disabled><svg aria-hidden="true" class="ic"><use href="#i-layers"/></svg>合并</button>
+            <button data-mode="organize" disabled><svg aria-hidden="true" class="ic"><use href="#i-grid"/></svg>组织</button>
+            <button data-mode="split" disabled><svg aria-hidden="true" class="ic"><use href="#i-scissors"/></svg>拆分</button>
+            <button data-mode="compress" disabled><svg aria-hidden="true" class="ic"><use href="#i-minimize"/></svg>压缩</button>
+            <button data-mode="convert" disabled><svg aria-hidden="true" class="ic"><use href="#i-swap"/></svg>互转</button>
+            <button data-mode="watermark" disabled><svg aria-hidden="true" class="ic"><use href="#i-type"/></svg>水印</button>
+            <button data-mode="pagenum" disabled><svg aria-hidden="true" class="ic"><use href="#i-hash"/></svg>页码</button>
+        </div>
+
+        <div class="opt-block" data-opt="merge">
+            <p class="hint">按上方列表顺序合并为一份 PDF。拖动文件条目可直接调整顺序。</p>
+        </div>
+
+        <div class="opt-block" data-opt="organize">
+            <p class="hint">在右侧网格中拖动页面重排顺序，悬浮按钮可旋转或删除单页。</p>
+        </div>
+
+        <div class="opt-block" data-opt="split">
+            <div class="seg" id="splitSeg">
+                <button data-v="range" class="active">按页码范围</button>
+                <button data-v="every">每 N 页一拆</button>
+                <button data-v="single">全部单页</button>
+            </div>
+            <div id="splitRangeRow">
+                <div class="opt-label">页码范围（如 1-3, 5, 8-10）</div>
+                <input class="opt-input" id="splitRange" value="1-3" spellcheck="false">
+            </div>
+            <div id="splitEveryRow" style="display:none;">
+                <div class="opt-label">每份页数 N</div>
+                <input class="opt-input" id="splitEvery" type="number" min="1" value="2">
+            </div>
+            <p class="hint" id="splitHint">将提取指定页码生成新的 PDF；页码可混用区间与逗号。</p>
+        </div>
+
+        <div class="opt-block" data-opt="compress">
+            <div class="opt-label">图片质量 <span class="slider-val" id="qVal">70%</span></div>
+            <div class="slider-row"><input type="range" id="qSlider" min="30" max="95" value="70"><span class="slider-val" id="qVal2">70%</span></div>
+            <div class="opt-row">
+                <div>
+                    <div class="opt-label">渲染 DPI</div>
+                    <select class="opt-select" id="dpiSel">
+                        <option value="96">96 DPI（更小）</option>
+                        <option value="120" selected>120 DPI（均衡）</option>
+                        <option value="150">150 DPI（清晰）</option>
+                        <option value="200">200 DPI（接近原样）</option>
+                    </select>
+                </div>
+            </div>
+            <p class="hint">逐页重新编码为图片再打包。扫描件与图片型 PDF 压缩效果最好；纯文字 PDF 体积可能反而变大。</p>
+        </div>
+
+        <div class="opt-block" data-opt="convert">
+            <div id="convP2I">
+                <div class="opt-row">
+                    <div>
+                        <div class="opt-label">页码范围（留空为全部页）</div>
+                        <input class="opt-input" id="convRange" value="" spellcheck="false" placeholder="如 1-5, 8">
+                    </div>
+                    <div>
+                        <div class="opt-label">DPI</div>
+                        <select class="opt-select" id="convDpi">
+                            <option value="96">96</option>
+                            <option value="150" selected>150</option>
+                            <option value="200">200</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="seg" id="convFmtSeg">
+                    <button data-v="png" class="active">PNG（无损）</button>
+                    <button data-v="jpeg">JPEG（体积小）</button>
+                </div>
+                <p class="hint">每页导出一张图片，多页时自动打包为 ZIP 下载。</p>
+            </div>
+            <div id="convI2P" style="display:none;">
+                <div class="opt-row">
+                    <div>
+                        <div class="opt-label">页面尺寸</div>
+                        <select class="opt-select" id="imgPageSize">
+                            <option value="fit" selected>与图片同尺寸</option>
+                            <option value="a4">A4 纵向</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="opt-label">页边距 pt</div>
+                        <input class="opt-input" id="imgMargin" type="number" min="0" value="0">
+                    </div>
+                </div>
+                <p class="hint">按上方图片顺序，每张图合成一页 PDF。</p>
+            </div>
+        </div>
+
+        <div class="opt-block" data-opt="watermark">
+            <div class="opt-label">水印文字</div>
+            <input class="opt-input" id="wmText" value="" spellcheck="false" placeholder="例如：仅供内部使用">
+            <div class="seg" id="wmLayoutSeg">
+                <button data-v="tile" class="active">平铺</button>
+                <button data-v="center">居中</button>
+            </div>
+            <div class="opt-row">
+                <div>
+                    <div class="opt-label">字号 pt</div>
+                    <input class="opt-input" id="wmSize" type="number" min="6" max="144" value="42">
+                </div>
+                <div>
+                    <div class="opt-label">颜色</div>
+                    <select class="opt-select" id="wmColor">
+                        <option value="gray" selected>灰（85,85,85）</option>
+                        <option value="black">黑（20,20,20）</option>
+                        <option value="white">白（235,235,235）</option>
+                    </select>
+                </div>
+            </div>
+            <div class="opt-label">不透明度 <span class="slider-val" id="wmOpaVal">15%</span></div>
+            <div class="slider-row"><input type="range" id="wmOpa" min="5" max="60" value="15"><span class="slider-val" id="wmOpaVal2">15%</span></div>
+            <div class="opt-label">旋转角度 <span class="slider-val" id="wmAngVal">-30°</span></div>
+            <div class="slider-row"><input type="range" id="wmAng" min="-90" max="90" value="-30"><span class="slider-val" id="wmAngVal2">-30°</span></div>
+            <p class="hint">含水印文字将在本机用内置中文字体渲染，无需联网。</p>
+        </div>
+
+        <div class="opt-block" data-opt="pagenum">
+            <div class="opt-label">位置</div>
+            <div class="pos-grid" id="posGrid">
+                <button data-pos="0"><i style="top:6px;left:8px">1</i></button><button data-pos="1"><i style="top:6px;left:50%">2</i></button><button data-pos="2"><i style="top:6px;right:8px">3</i></button>
+                <button data-pos="3"><i style="top:50%;left:8px">4</i></button><button data-pos="4"><i style="top:50%;left:50%">5</i></button><button data-pos="5"><i style="top:50%;right:8px">6</i></button>
+                <button data-pos="6" class="active"><i style="bottom:6px;left:8px">7</i></button><button data-pos="7"><i style="bottom:6px;left:50%">8</i></button><button data-pos="8"><i style="bottom:6px;right:8px">9</i></button>
+            </div>
+            <div class="opt-row">
+                <div>
+                    <div class="opt-label">起始页码</div>
+                    <input class="opt-input" id="pnStart" type="number" min="0" value="1">
+                </div>
+                <div>
+                    <div class="opt-label">字号 pt</div>
+                    <input class="opt-input" id="pnSize" type="number" min="6" max="36" value="11">
+                </div>
+            </div>
+            <div class="seg" id="pnFmtSeg">
+                <button data-v="plain" class="active">1</button>
+                <button data-v="pageX">第 X 页</button>
+                <button data-v="pageXofY">第 X 页 共 Y 页</button>
+            </div>
+            <p class="hint">页码同样使用内置中文字体渲染，支持中文格式。</p>
+        </div>
+
+        <button class="btn-primary" id="runBtn" disabled style="margin-top:16px;"><svg aria-hidden="true" class="ic"><use href="#i-zap"/></svg><span id="runLabel">先载入文件</span></button>
+
+        <p class="status-line" id="statusLine" style="display:none;"><span id="statusText"></span>
+            <span class="bar" id="statusBar"><i id="barFill"></i></span>
+        </p>
+        <p class="hint" style="margin-top:14px;">
+            <svg aria-hidden="true" class="ic"><use href="#i-cloud-off"/></svg>所有处理在你的浏览器本地完成，文件不会上传到任何服务器。
+        </p>
+    </section>
+
+    <section class="panel">
+        <div class="res-head">
+            <h2 id="resTitle">页面预览</h2>
+            <div class="res-actions">
+                <button id="resetBtn"><svg aria-hidden="true" class="ic"><use href="#i-refresh"/></svg>还原</button>
+                <button id="dlBtn" disabled><svg aria-hidden="true" class="ic"><use href="#i-download"/></svg><span id="dlLabel">下载</span></button>
+            </div>
+        </div>
+        <div class="empty" id="empty">
+            <svg aria-hidden="true" class="ic"><use href="#i-file"/></svg>
+            <span id="emptyText">载入 PDF 后，页面会显示在这里</span>
+        </div>
+        <div class="thumb-grid" id="thumbGrid" style="display:none;"></div>
+        <div class="out-info" id="outInfo" style="display:none; margin-top:16px;"></div>
+    </section>
+</div>
+
+</main>
+
+<footer class="lab-footer">
+    <p>sts团队
+        <span class="sep">|</span><a href="https://stsqz.com/">主站</a>
+        <span class="sep">|</span><a href="https://stsqz.com/privacy">隐私政策</a>
+        <span class="sep">|</span><a href="https://stsqz.com/thanks">开源鸣谢</a>
+    </p>
+</footer>
+
+<script src="/static/lab/js/lab-boot.js?v=2026110701"></script>
+<script src="/static/lab/js/lab-i18n.js?v=2026110701" defer></script>
+<script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function () {}); }</script>
+<script src="/static/lab/js/lab-common.js?v=2026110701"></script>
+<script src="/static/lab/vendor/pdf/pdf-lib.min.js?v=2026111401"></script>
+<script src="/static/lab/vendor/pdf/fontkit.umd.min.js?v=2026111401"></script>
+<script src="/static/lab/vendor/pdf/pdf.min.js?v=2026111401"></script>
+
+<script>window.LAB_V="1791186845";</script>
+<script type="module" src="/static/lab/js/pdf.js?v=2026111401"></script>
+
+<img src="https://stsqz.com/api/exp-beacon?act=tool" alt="" aria-hidden="true" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><script>
+(function(){
+"use strict";
+if(!window.__stsEN)return;
+try{
+document.title="PDF Studio - sts Lab";
+var MAP={"sts Lab - 浏览器里的 AI 工具箱": "sts Lab - AI Toolbox in Your Browser", "浏览器里的 AI 工具箱": "AI toolbox in your browser", "sts 实验室": "sts Lab", "返回主站": "Back to main site", "工具": "Tools", "指南": "Guide", "开源": "Open source", "语音转文字": "Transcribe", "一键抠图": "Background Remover", "文字识别": "OCR", "音视频处理": "Audio & Video", "照片动漫化": "Anime Photo", "PDF 工坊": "PDF Studio", "合并 - 拆分 - 重排 - 压缩 - 互转 - 水印 - 页码，全程本地完成。": "Merge - organize - split - compress - convert - watermark - page numbers, all locally.", "合并、拆分、重排、压缩、图片互转、水印、页码，一个工具全包。全程在本地完成，文件不会上传。": "Merge, organize, split, compress, convert, watermark and number pages in one tool. Everything stays on your device.", "主站":"Main site","工具箱":"Toolbox","返回工具箱":"Back to toolbox","拖入 PDF 或图片，可多选":"Drop PDFs or images here, multiple allowed","支持 pdf png jpg webp bmp gif，单文件不超过 200MB":"pdf png jpg webp bmp gif supported, up to 200MB each","合并":"Merge","组织":"Organize","拆分":"Split","压缩":"Compress","互转":"Convert","水印":"Watermark","页码":"Page numbers","按上方列表顺序合并为一份 PDF。拖动文件条目可直接调整顺序。":"Files merge in list order. Drag entries to reorder.","在右侧网格中拖动页面重排顺序，悬浮按钮可旋转或删除单页。":"Drag pages in the grid to reorder - hover a page to rotate or remove it.","按页码范围":"By page range","每 N 页一拆":"Every N pages","全部单页":"Single pages","页码范围（如 1-3, 5, 8-10）":"Page range (e.g. 1-3, 5, 8-10)","将提取指定页码生成新的 PDF；页码可混用区间与逗号。":"Extracts the given pages into a new PDF - ranges and commas can mix.","每份页数 N":"Pages per file N","图片质量":"Image quality","渲染 DPI":"Render DPI","96 DPI（更小）":"96 DPI (smallest)","120 DPI（均衡）":"120 DPI (balanced)","150 DPI（清晰）":"150 DPI (sharp)","200 DPI（接近原样）":"200 DPI (near original)","逐页重新编码为图片再打包。扫描件与图片型 PDF 压缩效果最好；纯文字 PDF 体积可能反而变大。":"Re-encodes each page as an image. Best for scans; text-heavy PDFs may get larger.","页面尺寸":"Page size","与图片同尺寸":"Match image size","A4 纵向":"A4 portrait","页边距 pt":"Margin (pt)","按上方图片顺序，每张图合成一页 PDF。":"Each image becomes one page, in list order.","页码范围（留空为全部页）":"Page range (empty = all)","PNG（无损）":"PNG (lossless)","JPEG（体积小）":"JPEG (smaller)","每页导出一张图片，多页时自动打包为 ZIP 下载。":"Each page exports as an image - multiple pages come as a ZIP.","水印文字":"Watermark text","例如：仅供内部使用":"e.g. For internal use only","平铺":"Tiled","居中":"Centered","字号 pt":"Font size (pt)","不透明度":"Opacity","旋转角度":"Rotation","颜色":"Color","灰（85,85,85）":"Gray (85,85,85)","黑（20,20,20）":"Black (20,20,20)","白（235,235,235）":"White (235,235,235)","含水印文字将在本机用内置中文字体渲染，无需联网。":"Watermark text renders locally with the built-in CJK font - no network needed.","位置":"Position","起始页码":"Start number","格式":"Format","第 X 页":"Page X","第 X 页 共 Y 页":"Page X of Y","页码同样使用内置中文字体渲染，支持中文格式。":"Page numbers render with the built-in CJK font - Chinese formats supported.","所有处理在你的浏览器本地完成，文件不会上传到任何服务器。":"Everything runs in your browser - files never leave your device.","页面预览":"Page preview","还原":"Reset","下载":"Download","载入 PDF 后，页面会显示在这里":"Pages will appear here once a PDF is loaded","先载入文件":"Load a file first","正在加载":"Loading"};
+var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
+var n;
+while((n=w.nextNode())){
+  var k=n.nodeValue.trim();
+  if(k&&MAP[k]!==undefined)n.nodeValue=n.nodeValue.replace(k,MAP[k]);
+}
+}catch(e){}
+finally{document.documentElement.removeAttribute("data-lang");}
+})();
+</script></body>
+</html>
