@@ -272,6 +272,7 @@ const MODE_LABEL = {
 
 function refreshUI(rebuildThumbs) {
     renderFiles();
+    renderHistory();
     const avail = modeAvail();
     document.querySelectorAll('#modeTabs button').forEach(b => {
         b.disabled = !avail[b.dataset.mode];
@@ -538,17 +539,20 @@ function pushHistory(label, results) {
 }
 
 function renderHistory() {
-    const old = document.querySelectorAll('.hist-title, .hist-list');
-    old.forEach(el => el.remove());
-    if (!state.history || !state.history.length) return;
-    const info = $('outInfo');
+    const box = $('histBox');
+    if (!box) return;
+    box.innerHTML = '';
+    if (!state.history || !state.history.length) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
     const title = document.createElement('p');
     title.className = 'hist-title';
     title.textContent = L('本会话导出记录', 'Session exports');
-    info.appendChild(title);
+    box.appendChild(title);
     const list = document.createElement('div');
     list.className = 'hist-list';
-    state.history.forEach((h, i) => {
+    list.style.borderTop = 'none';
+    list.style.paddingTop = '0';
+    state.history.forEach(h => {
         const row = document.createElement('div');
         row.className = 'hist-row';
         const t = document.createElement('span');
@@ -566,7 +570,7 @@ function renderHistory() {
         row.append(t, lb, btn);
         list.appendChild(row);
     });
-    info.appendChild(list);
+    box.appendChild(list);
 }
 
 async function downloadItems(items) {
@@ -685,13 +689,34 @@ function drawFx(th, file, pageIndex) {
 
 function renderFxAll() {
     if (state.mode !== 'watermark' && state.mode !== 'pagenum') return;
+    state.fxGen = (state.fxGen || 0) + 1;
+    const gen = state.fxGen;
     const stage = document.querySelector('.fx-large-stage');
     if (stage && !stage.querySelector('.thumb-skeleton')) drawFxOn(stage.querySelector('.fx'), 0, pdfFiles()[0] ? pdfFiles()[0].pageCount : 1);
-    document.querySelectorAll('#thumbGrid .thumb.fx-on').forEach(th => {
+    const grid = $('thumbGrid');
+    const gr = grid.getBoundingClientRect();
+    const thumbs = [...document.querySelectorAll('#thumbGrid .thumb.fx-on')];
+    const draw = th => {
+        if (gen !== state.fxGen) return;
         const fileId = Number(th.dataset.file);
         const f = state.files.find(x => x.id === fileId);
         if (f) drawFx(th, f, Number(th.dataset.page));
-    });
+    };
+    const offscreen = [];
+    for (const th of thumbs) {
+        const r = th.getBoundingClientRect();
+        if (r.bottom < gr.top - 120 || r.top > gr.bottom + 120) offscreen.push(th);
+        else draw(th);
+    }
+    let i = 0;
+    const batch = () => {
+        if (gen !== state.fxGen) return;
+        const slice = offscreen.slice(i, i + 14);
+        i += 14;
+        slice.forEach(draw);
+        if (i < offscreen.length) requestAnimationFrame(batch);
+    };
+    if (offscreen.length) requestAnimationFrame(batch);
 }
 
 let splitTimer = null;
@@ -1134,34 +1159,42 @@ async function runOrganize() {
 }
 
 async function runSplit() {
-    const f = pdfFiles()[0];
     const seg = segVal('splitSeg');
-    setStatus(L('正在拆分…', 'Splitting…'), '', 0.1);
-    const src = await PLIB.PDFDocument.load(f.bytes.slice(0), { ignoreEncryption: false });
-    const total = src.getPageCount();
-    const groups = [];
-    if (seg === 'range') {
-        const pages = parseRange($('splitRange').value, total);
-        if (!pages) throw new Error(L('页码范围无效或为空', 'Invalid page range'));
-        groups.push({ label: '', pages });
-    } else if (seg === 'single') {
-        for (let i = 1; i <= total; i++) groups.push({ label: 'p' + i, pages: [i] });
-    } else {
-        const n = Math.max(1, Number($('splitEvery').value) || 2);
-        for (let i = 1; i <= total; i += n) {
-            const pages = [];
-            for (let k = i; k < i + n && k <= total; k++) pages.push(k);
-            groups.push({ label: 'p' + i + '-' + pages[pages.length - 1], pages });
-        }
-    }
+    const pdfs = pdfFiles();
+    const grand = pdfs.reduce((s, x) => s + x.pageCount, 0);
+    let done = 0;
     const results = [];
-    for (let gi = 0; gi < groups.length; gi++) {
-        const out = await PLIB.PDFDocument.create();
-        const copied = await out.copyPages(src, groups[gi].pages.map(p => p - 1));
-        copied.forEach(p => out.addPage(p));
-        const bytes = await out.save();
-        results.push({ name: baseName(f.name) + (groups[gi].label ? '-' + groups[gi].label : '-extract') + '.pdf', bytes });
-        setStatus(L('正在拆分…', 'Splitting…'), '', (gi + 1) / groups.length);
+    for (let fi = 0; fi < pdfs.length; fi++) {
+        const f = pdfs[fi];
+        const src = await PLIB.PDFDocument.load(f.bytes.slice(0), { ignoreEncryption: false });
+        const total = src.getPageCount();
+        const groups = [];
+        if (seg === 'range') {
+            const pages = parseRange($('splitRange').value, total);
+            if (!pages) throw new Error(L('页码范围无效或为空', 'Invalid page range'));
+            groups.push({ label: '', pages });
+        } else if (seg === 'single') {
+            for (let i = 1; i <= total; i++) groups.push({ label: 'p' + i, pages: [i] });
+        } else {
+            const n = Math.max(1, Number($('splitEvery').value) || 2);
+            for (let i = 1; i <= total; i += n) {
+                const pages = [];
+                for (let k = i; k < i + n && k <= total; k++) pages.push(k);
+                groups.push({ label: 'p' + i + '-' + pages[pages.length - 1], pages });
+            }
+        }
+        const bn = baseName(f.name);
+        const prefix = pdfs.length > 1 ? bn + '-' : '';
+        for (let gi = 0; gi < groups.length; gi++) {
+            const out = await PLIB.PDFDocument.create();
+            const copied = await out.copyPages(src, groups[gi].pages.map(p => p - 1));
+            copied.forEach(p => out.addPage(p));
+            const bytes = await out.save();
+            results.push({ name: bn + (groups[gi].label ? '-' + groups[gi].label : '-extract') + '.pdf', bytes });
+            done++;
+            setStatus(L('正在拆分…', 'Splitting…'), '', done / grand);
+            if (done % 8 === 0) await yieldFrame();
+        }
     }
     return results;
 }
@@ -1437,6 +1470,7 @@ async function downloadResults() {
 function clearResults() {
     state.results = null;
     $('outInfo').style.display = 'none';
+    $('outInfo').innerHTML = '';
     $('dlBtn').disabled = true;
 }
 
