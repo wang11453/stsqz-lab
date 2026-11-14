@@ -95,7 +95,7 @@ async function getEmbedFont() {
     const doc = await PLIB.PDFDocument.create();
     doc.registerFontkit(window.fontkit);
     const font = await doc.embedFont(buf);
-    state.fontCache = { buf, font };
+    state.fontCache = { buf };
     return state.fontCache;
 }
 
