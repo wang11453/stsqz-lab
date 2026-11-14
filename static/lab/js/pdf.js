@@ -64,6 +64,14 @@ async function idbPut(key, blob) {
         t.onerror = () => rej(t.error);
     });
 }
+async function idbDel(key) {
+    const db = await idbOpen();
+    return new Promise((res, rej) => {
+        const t = db.transaction('files', 'readwrite').objectStore('files').delete(key);
+        t.onsuccess = () => res();
+        t.onerror = () => rej(t.error);
+    });
+}
 
 async function getEmbedFont() {
     if (state.fontCache) return state.fontCache;
@@ -75,12 +83,13 @@ async function getEmbedFont() {
         } catch (e) {}
     }
     if (!buf) {
-        setStatus(L('正在加载中文字体（约 13MB，仅首次）', 'Loading CJK font (~13MB, first time only)'));
+        setStatus(L('正在加载中文字库（约 1.8MB，仅首次）', 'Loading CJK font (~1.8MB, first time only)'));
         const resp = await fetch(FONT_URL);
-        if (!resp.ok) throw new Error(L('中文字体加载失败', 'Failed to load CJK font'));
+        if (!resp.ok) throw new Error(L('中文字库加载失败', 'Failed to load CJK font'));
         buf = new Uint8Array(await resp.arrayBuffer());
         if (HAS_IDB) {
             try { await idbPut(FONT_KEY, new Blob([buf], { type: 'font/ttf' })); } catch (e) {}
+            try { await idbDel('fonts|pdf-studio-noto-sc'); } catch (e) {}
         }
     }
     const doc = await PLIB.PDFDocument.create();
