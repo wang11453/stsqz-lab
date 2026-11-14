@@ -24,6 +24,7 @@ const state = {
     orgFut: [],
     orgSel: new Set(),
     orgAnchor: null,
+    orgExt: null,
     history: [],
     busy: false,
     results: null,
@@ -1240,39 +1241,46 @@ async function runConvert() {
         const bytes = await out.save();
         return [{ name: 'images-' + state.files.length + 'p.pdf', bytes }];
     }
-    const f = pdfFiles()[0];
     const dpi = Number($('convDpi').value);
     const fmt = segVal('convFmtSeg');
-    const total = f.pageCount;
-    let pages;
-    if ($('convRange').value.trim()) {
-        pages = parseRange($('convRange').value, total);
-        if (!pages) throw new Error(L('页码范围无效', 'Invalid page range'));
-    } else {
-        pages = Array.from({ length: total }, (_, i) => i + 1);
-    }
+    const pdfs = pdfFiles();
+    const grand = pdfs.reduce((s, x) => s + x.pageCount, 0);
+    let done = 0;
     const items = {};
-    for (let i = 0; i < pages.length; i++) {
-        const page = await f.jsDoc.getPage(pages[i]);
-        const vp = page.getViewport({ scale: dpi / 72 });
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.floor(vp.width));
-        canvas.height = Math.max(1, Math.floor(vp.height));
-        const ctx = canvas.getContext('2d', { alpha: fmt === 'png' });
-        if (fmt === 'jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-        await page.render({ canvasContext: ctx, viewport: vp }).promise;
-        const blob = await new Promise(res => canvas.toBlob(res, fmt === 'png' ? 'image/png' : 'image/jpeg', 0.92));
-        const u8 = new Uint8Array(await blob.arrayBuffer());
+    for (const f of pdfs) {
+        const total = f.pageCount;
+        let pages;
+        if ($('convRange').value.trim()) {
+            pages = parseRange($('convRange').value, total);
+            if (!pages) throw new Error(L('页码范围无效', 'Invalid page range'));
+        } else {
+            pages = Array.from({ length: total }, (_, i) => i + 1);
+        }
         const bn = baseName(f.name);
-        items[bn + '-p' + pages[i] + '.' + fmt] = u8;
-        setStatus(L('正在导出图片…', 'Exporting images…'), '', (i + 1) / pages.length);
+        const prefix = pdfs.length > 1 ? bn + '-' : '';
+        for (let i = 0; i < pages.length; i++) {
+            const page = await f.jsDoc.getPage(pages[i]);
+            const vp = page.getViewport({ scale: dpi / 72 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.floor(vp.width));
+            canvas.height = Math.max(1, Math.floor(vp.height));
+            const ctx = canvas.getContext('2d', { alpha: fmt === 'png' });
+            if (fmt === 'jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+            await page.render({ canvasContext: ctx, viewport: vp }).promise;
+            const blob = await new Promise(res => canvas.toBlob(res, fmt === 'png' ? 'image/png' : 'image/jpeg', 0.92));
+            const u8 = new Uint8Array(await blob.arrayBuffer());
+            items[prefix + 'p' + pages[i] + '.' + fmt] = u8;
+            done++;
+            setStatus(L('正在导出图片…', 'Exporting images…'), '', done / grand);
+            if (done % 5 === 0) await yieldFrame();
+        }
     }
     if (Object.keys(items).length === 1) {
         const key = Object.keys(items)[0];
         return [{ name: key, bytes: items[key] }];
     }
     const zipped = zipSync(items, { level: 4 });
-    return [{ name: baseName(f.name) + '-images.zip', bytes: zipped }];
+    return [{ name: (pdfs.length > 1 ? 'pdf-studio-' : baseName(pdfs[0].name) + '-') + 'images.zip', bytes: zipped }];
 }
 
 async function drawWatermark(doc, opts) {
