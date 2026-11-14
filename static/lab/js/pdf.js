@@ -7,11 +7,12 @@ const fmtSize = window.LabFmt && window.LabFmt.size ? window.LabFmt.size : (b =>
 const PDFJS = window.pdfjsLib;
 const PLIB = window.PDFLib;
 PDFJS.GlobalWorkerOptions.workerSrc = '/static/lab/vendor/pdf/pdf.worker.min.js?v=2026111401';
+PDFJS.GlobalWorkerOptions.standardFontDataUrl = '/static/lab/vendor/pdf/standard_fonts/';
 
 const VENDOR = '/static/lab/vendor/pdf/';
 const MAX_SIZE = 200 * 1024 * 1024;
-const FONT_KEY = 'fonts|pdf-studio-noto-sc';
-const FONT_URL = VENDOR + 'NotoSansSC-Regular.ttf';
+const FONT_KEY = 'fonts|pdf-studio-noto-gb1';
+const FONT_URL = VENDOR + 'NotoSansSC-GB1.ttf';
 const HAS_IDB = typeof indexedDB !== 'undefined';
 
 const state = {
@@ -84,7 +85,7 @@ async function getEmbedFont() {
     }
     const doc = await PLIB.PDFDocument.create();
     doc.registerFontkit(window.fontkit);
-    const font = await doc.embedFont(buf, { subset: true });
+    const font = await doc.embedFont(buf);
     state.fontCache = { buf, font };
     return state.fontCache;
 }
@@ -1264,7 +1265,7 @@ async function drawWatermark(doc, opts) {
     if (hasCJK(opts.text)) {
         const cached = await getEmbedFont();
         doc.registerFontkit(window.fontkit);
-        font = await doc.embedFont(cached.buf, { subset: true });
+        font = await doc.embedFont(cached.buf);
     } else {
         font = await doc.embedFont(PLIB.StandardFonts.HelveticaBold);
     }
@@ -1347,7 +1348,7 @@ async function runPagenum() {
         if (hasCJK(sample)) {
             const cached = await getEmbedFont();
             doc.registerFontkit(window.fontkit);
-            font = await doc.embedFont(cached.buf, { subset: true });
+            font = await doc.embedFont(cached.buf);
         } else {
             font = await doc.embedFont(PLIB.StandardFonts.Helvetica);
         }
