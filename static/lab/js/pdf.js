@@ -1469,7 +1469,7 @@ async function run() {
 function tabEvents() {
     $('modeTabs').onclick = e => {
         const b = e.target.closest('button[data-mode]');
-        if (!b || b.disabled) return;
+        if (!b || b.disabled || state.busy) return;
         if (state.mode === 'organize' && b.dataset.mode !== 'organize') state.org = null;
         state.mode = b.dataset.mode;
         clearResults();
@@ -1538,6 +1538,7 @@ function dzEvents() {
     ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
     ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
     dz.addEventListener('drop', e => {
+        e.stopPropagation();
         const fs = e.dataTransfer && e.dataTransfer.files;
         if (fs && fs.length) loadFileObjects([...fs]);
     });
