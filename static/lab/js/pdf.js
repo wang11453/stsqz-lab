@@ -131,7 +131,8 @@ async function loadFileObjects(list) {
                 const bmp = await createImageBitmap(blob);
                 added.push({
                     id: state.nextId++, name: file.name, size: file.size,
-                    kind: 'img', bytes, w: bmp.width, h: bmp.height, bmp
+                    kind: 'img', bytes, w: bmp.width, h: bmp.height, bmp,
+                    objUrl: URL.createObjectURL(blob)
                 });
             } else {
                 setStatus(L('不支持的文件类型：' + file.name, 'Unsupported type: ' + file.name), 'err');
@@ -287,17 +288,30 @@ function clearThumbs() {
     $('thumbGrid').innerHTML = '';
 }
 
-function makeThumbShell(pageIndex, fileId, fname) {
+function makeThumbShell(pageIndex, fileId, fname, isImg, objUrl) {
     const wrap = document.createElement('div');
     wrap.className = 'thumb-wrap';
     const th = document.createElement('div');
     th.className = 'thumb';
     th.dataset.page = pageIndex;
     th.dataset.file = fileId;
-    const ph = document.createElement('div');
-    ph.className = 'thumb-loading';
-    ph.textContent = L('加载中', '…');
-    th.appendChild(ph);
+    if (isImg) {
+        const img = document.createElement('img');
+        img.src = objUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        th.appendChild(img);
+        const fx = document.createElement('canvas');
+        fx.className = 'fx';
+        th.appendChild(fx);
+    } else {
+        const sk = document.createElement('div');
+        sk.className = 'thumb-skeleton';
+        th.appendChild(sk);
+        const fx = document.createElement('canvas');
+        fx.className = 'fx';
+        th.appendChild(fx);
+    }
     if (fname && state.files.length > 1) {
         const tag = document.createElement('div');
         tag.className = 'f-tag';
@@ -324,12 +338,23 @@ function renderThumbs() {
     grid.style.display = 'grid';
     empty.style.display = 'none';
     const pdfs = pdfFiles();
+    const imgs = state.files.filter(isImgFile);
     if (state.mode === 'organize') {
         $('resTitle').textContent = L('页面编辑', 'Organize pages');
         buildOrgThumbs();
         return;
     }
     $('resTitle').textContent = L('页面预览', 'Page preview');
+    const fxMode = state.mode === 'watermark' || state.mode === 'pagenum';
+    if (fxMode && pdfs.length) {
+        $('resTitle').textContent = state.mode === 'watermark' ? L('水印预览 - 实时效果', 'Watermark preview - live') : L('页码预览 - 实时效果', 'Page numbers preview - live');
+        const f = pdfs[0];
+        const large = document.createElement('div');
+        large.className = 'fx-large';
+        large.innerHTML = '<div class="fx-large-stage"><div class="thumb-skeleton"></div><canvas class="fx"></canvas></div>';
+        grid.appendChild(large);
+        buildFxLarge(f);
+    }
     thumbObserver = new IntersectionObserver(entries => {
         for (const en of entries) {
             if (!en.isIntersecting) continue;
@@ -337,20 +362,49 @@ function renderThumbs() {
             thumbObserver.unobserve(th);
             queueThumbRender(th);
         }
-    }, { root: grid, rootMargin: '200px' });
+    }, { root: grid, rootMargin: '260px' });
+    let hasPreview = false;
     for (const f of pdfs) {
+        hasPreview = true;
         for (let i = 0; i < f.pageCount; i++) {
-            const shell = makeThumbShell(i, f.id, f.name);
+            const shell = makeThumbShell(i, f.id, f.name, false, null);
             grid.appendChild(shell);
-            const th = shell.classList && shell.classList.contains('thumb') ? shell : shell.firstChild;
+            const th = shell.classList && shell.classList.contains('thumb') ? shell : shell.querySelector('.thumb');
+            if (fxMode) th.classList.add('fx-on');
             thumbObserver.observe(th);
         }
     }
-    if (!pdfs.length) {
+    for (const f of imgs) {
+        hasPreview = true;
+        const shell = makeThumbShell(0, f.id, f.name, true, f.objUrl);
+        grid.appendChild(shell);
+        const th = shell.classList && shell.classList.contains('thumb') ? shell : shell.querySelector('.thumb');
+        if (fxMode) th.classList.add('fx-on');
+        drawFx(th, f);
+    }
+    if (!hasPreview) {
         empty.style.display = 'block';
-        $('emptyText').textContent = L('当前为图片文件，执行合成后生成 PDF', 'Images loaded - run Convert to build the PDF');
         grid.style.display = 'none';
     }
+    if (fxMode) scheduleFx(0);
+}
+
+async function buildFxLarge(f) {
+    const stage = document.querySelector('.fx-large-stage');
+    if (!stage) return;
+    try {
+        const page = await f.jsDoc.getPage(1);
+        const vp = page.getViewport({ scale: Math.min(1.4, 560 / page.getViewport({ scale: 1 }).width) });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.floor(vp.width));
+        canvas.height = Math.max(1, Math.floor(vp.height));
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        if (!document.body.contains(stage)) return;
+        const sk = stage.querySelector('.thumb-skeleton');
+        if (sk) sk.remove();
+        stage.insertBefore(canvas, stage.firstChild);
+        drawFxOn(stage.querySelector('.fx'), 0, f.pageCount);
+    } catch (e) {}
 }
 
 function queueThumbRender(th) {
@@ -368,11 +422,178 @@ function queueThumbRender(th) {
             canvas.width = Math.max(1, Math.floor(vp.width));
             canvas.height = Math.max(1, Math.floor(vp.height));
             await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-            const ph = th.querySelector('.thumb-loading');
-            if (ph) ph.remove();
+            const sk = th.querySelector('.thumb-skeleton');
+            if (sk) sk.remove();
             th.insertBefore(canvas, th.firstChild);
+            if (th.classList.contains('fx-on')) drawFx(th, f, pageIndex);
         } catch (e) {}
     });
+}
+
+let fxTimer = null;
+function scheduleFx(delay) {
+    clearTimeout(fxTimer);
+    fxTimer = setTimeout(renderFxAll, delay == null ? 300 : delay);
+}
+
+function fxParams() {
+    if (state.mode === 'watermark') {
+        return {
+            kind: 'watermark',
+            text: $('wmText').value.trim() || L('水印文字', 'Watermark'),
+            layout: segVal('wmLayoutSeg'),
+            size: Math.max(6, Number($('wmSize').value) || 42),
+            color: $('wmColor').value === 'black' ? '20,20,20' : $('wmColor').value === 'white' ? '235,235,235' : '85,85,85',
+            opacity: Number($('wmOpa').value) / 100,
+            angle: Number($('wmAng').value)
+        };
+    }
+    return {
+        kind: 'pagenum',
+        start: Math.max(0, Number($('pnStart').value) || 1),
+        size: Math.max(6, Number($('pnSize').value) || 11),
+        fmt: segVal('pnFmtSeg'),
+        pos: Number(document.querySelector('#posGrid button.active').dataset.pos)
+    };
+}
+
+function drawFxOn(cv, pageIndex, totalPages) {
+    const p = fxParams();
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (!W) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.scale(dpr, dpr);
+    const scale = W / 595.28;
+    if (p.kind === 'watermark') {
+        const fs = Math.max(9, p.size * scale);
+        ctx.save();
+        ctx.font = '300 ' + fs + 'px Poppins, "PingFang SC", sans-serif';
+        ctx.fillStyle = 'rgba(' + p.color + ',' + p.opacity + ')';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const rad = (p.angle * Math.PI) / 180;
+        if (p.layout === 'center') {
+            ctx.translate(W / 2, H / 2);
+            ctx.rotate(rad);
+            ctx.fillText(p.text, 0, 0);
+        } else {
+            const tw = ctx.measureText(p.text).width;
+            const dx = Math.max(80, tw + 140 * scale);
+            const dy = Math.max(70, fs * 1.4 + 160 * scale);
+            for (let cx = -dx / 2; cx < W + dx; cx += dx) {
+                for (let cy = -dy / 2; cy < H + dy; cy += dy) {
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rad);
+                    ctx.fillText(p.text, 0, 0);
+                    ctx.restore();
+                }
+            }
+        }
+        ctx.restore();
+    } else {
+        const fs = Math.max(9, p.size * scale);
+        const num = p.start + (pageIndex || 0);
+        const text = p.fmt === 'plain' ? String(num)
+            : p.fmt === 'pageX' ? L('第 ' + num + ' 页', 'Page ' + num)
+            : L('第 ' + num + ' 页 共 ' + totalPages + ' 页', 'Page ' + num + ' of ' + totalPages);
+        ctx.save();
+        ctx.font = '300 ' + fs + 'px Poppins, "PingFang SC", sans-serif';
+        ctx.fillStyle = 'rgba(89,89,89,0.9)';
+        ctx.textBaseline = 'alphabetic';
+        const margin = 20 * scale;
+        const tw = ctx.measureText(text).width;
+        const thh = fs;
+        const pos = PN_POS[p.pos];
+        let x = pos.x * W, y = pos.y * H;
+        if (pos.ax === 'center') x = (W - tw) / 2;
+        if (pos.ax === 'right') x = W - tw - margin;
+        if (pos.ay === 'top') y = margin + thh;
+        if (pos.ay === 'middle') y = (H + thh) / 2;
+        if (pos.ay === 'bottom') y = H - margin;
+        ctx.fillText(text, x, y);
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4, 3]);
+        ctx.strokeRect(x - 5, y - thh - 3, tw + 10, thh + 8);
+        ctx.restore();
+    }
+}
+
+function drawFx(th, file, pageIndex) {
+    const fx = th.querySelector('.fx');
+    if (!fx || !th.clientWidth) return;
+    drawFxOn(fx, pageIndex, file && file.kind === 'pdf' ? file.pageCount : 1);
+}
+
+function renderFxAll() {
+    if (state.mode !== 'watermark' && state.mode !== 'pagenum') return;
+    const stage = document.querySelector('.fx-large-stage');
+    if (stage && !stage.querySelector('.thumb-skeleton')) drawFxOn(stage.querySelector('.fx'), 0, pdfFiles()[0] ? pdfFiles()[0].pageCount : 1);
+    document.querySelectorAll('#thumbGrid .thumb.fx-on').forEach(th => {
+        const fileId = Number(th.dataset.file);
+        const f = state.files.find(x => x.id === fileId);
+        if (f) drawFx(th, f, Number(th.dataset.page));
+    });
+}
+
+let splitTimer = null;
+function scheduleSplitHighlight() {
+    clearTimeout(splitTimer);
+    splitTimer = setTimeout(highlightSplitPages, 220);
+}
+
+function highlightSplitPages() {
+    if (state.mode !== 'split' || pdfFiles().length !== 1) return;
+    const f = pdfFiles()[0];
+    const seg = segVal('splitSeg');
+    let pages = null;
+    if (seg === 'range') {
+        pages = parseRange($('splitRange').value, f.pageCount);
+    } else if (seg === 'every') {
+        const n = Math.max(1, Number($('splitEvery').value) || 2);
+        pages = [];
+        for (let i = 1; i <= Math.min(n, f.pageCount); i++) pages.push(i);
+    } else {
+        pages = Array.from({ length: f.pageCount }, (_, i) => i + 1);
+    }
+    const set = new Set(pages || []);
+    document.querySelectorAll('#thumbGrid .thumb').forEach(th => {
+        th.classList.toggle('in-range', set.has(Number(th.dataset.page) + 1));
+    });
+}
+
+async function renderResultPreview(results) {
+    const picks = results.filter(r => /\.pdf$/i.test(r.name)).slice(0, 4);
+    if (!picks.length) return;
+    const info = $('outInfo');
+    const row = document.createElement('div');
+    row.className = 'res-thumb-row';
+    for (const pick of picks) {
+        try {
+            const jsDoc = await PDFJS.getDocument({ data: pick.bytes.slice(0) }).promise;
+            const page = await jsDoc.getPage(1);
+            const vp = page.getViewport({ scale: 0.22 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.floor(vp.width));
+            canvas.height = Math.max(1, Math.floor(vp.height));
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+            jsDoc.destroy();
+            const cell = document.createElement('div');
+            cell.className = 'res-thumb-cell';
+            cell.appendChild(canvas);
+            const cap = document.createElement('span');
+            cap.textContent = pick.name + ' - ' + fmtSize(pick.bytes.length);
+            cap.title = pick.name;
+            cell.appendChild(cap);
+            row.appendChild(cell);
+        } catch (e) {}
+    }
+    if (row.children.length) info.insertBefore(row, info.firstChild);
 }
 
 function buildOrgThumbs() {
@@ -790,6 +1011,7 @@ function showResults(results) {
     $('dlBtn').disabled = false;
     setStatus(L('完成', 'Done'), 'ok');
     setTimeout(clearStatus, 3000);
+    renderResultPreview(results);
 }
 
 async function downloadResults() {
@@ -865,9 +1087,17 @@ function tabEvents() {
                 $('splitHint').textContent = b.dataset.v === 'range' ? L('将提取指定页码生成新的 PDF；页码可混用区间与逗号。', 'Extracts the given pages into a new PDF.')
                     : b.dataset.v === 'every' ? L('每 N 页拆成一份，最后不足 N 页的也独立成一份。', 'Every N pages become one file; the remainder forms the last one.')
                     : L('每一页拆成一个独立 PDF，多份时打包为 ZIP。', 'Each page becomes its own PDF - many pages come as a ZIP.');
+                scheduleSplitHighlight();
             }
+            if (seg.id === 'wmLayoutSeg') scheduleFx(0);
+            if (seg.id === 'pnFmtSeg') scheduleFx(0);
         });
     });
+    $('splitRange').addEventListener('input', scheduleSplitHighlight);
+    $('splitEvery').addEventListener('input', scheduleSplitHighlight);
+    $('wmText').addEventListener('input', () => scheduleFx());
+    $('wmSize').addEventListener('input', () => scheduleFx());
+    $('wmColor').addEventListener('change', () => scheduleFx(0));
     $('qSlider').oninput = function () {
         $('qVal').textContent = this.value + '%';
         $('qVal2').textContent = this.value + '%';
@@ -875,17 +1105,22 @@ function tabEvents() {
     $('wmOpa').oninput = function () {
         $('wmOpaVal').textContent = this.value + '%';
         $('wmOpaVal2').textContent = this.value + '%';
+        scheduleFx();
     };
     $('wmAng').oninput = function () {
         $('wmAngVal').textContent = this.value + '°';
         $('wmAngVal2').textContent = this.value + '°';
+        scheduleFx();
     };
     $('posGrid').onclick = e => {
         const b = e.target.closest('button[data-pos]');
         if (!b) return;
         document.querySelectorAll('#posGrid button').forEach(x => x.classList.remove('active'));
         b.classList.add('active');
+        scheduleFx(0);
     };
+    $('pnStart').addEventListener('input', () => scheduleFx());
+    $('pnSize').addEventListener('input', () => scheduleFx());
     $('runBtn').onclick = run;
     $('dlBtn').onclick = downloadResults;
 }
@@ -893,6 +1128,7 @@ function tabEvents() {
 function dzEvents() {
     const dz = $('dropzone');
     const input = $('fileInput');
+    const curtain = $('dropCurtain');
     dz.onclick = () => input.click();
     input.onchange = () => { loadFileObjects([...input.files]); input.value = ''; };
     ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
@@ -901,8 +1137,27 @@ function dzEvents() {
         const fs = e.dataTransfer && e.dataTransfer.files;
         if (fs && fs.length) loadFileObjects([...fs]);
     });
-    window.addEventListener('dragover', e => e.preventDefault());
-    window.addEventListener('drop', e => e.preventDefault());
+    let dragDepth = 0;
+    const hasFiles = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
+    window.addEventListener('dragenter', e => {
+        if (!hasFiles(e)) return;
+        e.preventDefault();
+        dragDepth++;
+        curtain.classList.add('show');
+    });
+    window.addEventListener('dragleave', e => {
+        if (!hasFiles(e)) return;
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (!dragDepth) curtain.classList.remove('show');
+    });
+    window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+    window.addEventListener('drop', e => {
+        e.preventDefault();
+        dragDepth = 0;
+        curtain.classList.remove('show');
+        const fs = e.dataTransfer && e.dataTransfer.files;
+        if (fs && fs.length) loadFileObjects([...fs]);
+    });
 }
 
 async function boot() {
