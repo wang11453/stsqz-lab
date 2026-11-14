@@ -19,6 +19,11 @@ const state = {
     mode: 'merge',
     nextId: 1,
     org: null,
+    orgHist: [],
+    orgFut: [],
+    orgSel: new Set(),
+    orgAnchor: null,
+    history: [],
     busy: false,
     results: null,
     fontCache: null
@@ -269,6 +274,9 @@ function refreshUI(rebuildThumbs) {
         b.classList.toggle('show', b.dataset.opt === state.mode && state.files.length > 0);
     });
     if (state.mode === 'convert') updateConvertUI();
+    if (state.mode === 'compress') scheduleEstimate();
+    updateOrgBtns();
+    updateSelBar();
     $('runBtn').disabled = !avail[state.mode] || state.busy;
     $('runLabel').textContent = avail[state.mode] ? MODE_LABEL[state.mode]() : L('先载入文件', 'Load a file first');
     if (rebuildThumbs) renderThumbs();
@@ -367,7 +375,7 @@ function renderThumbs() {
     for (const f of pdfs) {
         hasPreview = true;
         for (let i = 0; i < f.pageCount; i++) {
-            const shell = makeThumbShell(i, f.id, f.name, false, null);
+            const shell = makeThumbShell(i, f.id, i === 0 ? f.name : null, false, null);
             grid.appendChild(shell);
             const th = shell.classList && shell.classList.contains('thumb') ? shell : shell.querySelector('.thumb');
             if (fxMode) th.classList.add('fx-on');
@@ -455,6 +463,137 @@ function fxParams() {
         fmt: segVal('pnFmtSeg'),
         pos: Number(document.querySelector('#posGrid button.active').dataset.pos)
     };
+}
+
+let estTimer = null;
+const yieldFrame = () => new Promise(r => setTimeout(r, 0));
+
+const LS_KEY = 'pdf-studio-opts';
+let lsTimer = null;
+function scheduleSaveOpts() {
+    clearTimeout(lsTimer);
+    lsTimer = setTimeout(saveOpts, 500);
+}
+function saveOpts() {
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify({
+            wmText: $('wmText').value, wmLayout: segVal('wmLayoutSeg'), wmSize: $('wmSize').value,
+            wmColor: $('wmColor').value, wmOpa: $('wmOpa').value, wmAng: $('wmAng').value,
+            pnPos: document.querySelector('#posGrid button.active').dataset.pos,
+            pnStart: $('pnStart').value, pnSize: $('pnSize').value, pnFmt: segVal('pnFmtSeg'),
+            q: $('qSlider').value, dpi: $('dpiSel').value, fmt: segVal('convFmtSeg')
+        }));
+    } catch (e) {}
+}
+function loadOpts() {
+    let o;
+    try { o = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) {}
+    if (!o) return;
+    const setV = (id, v) => { const el = $(id); if (el && v != null && v !== '') el.value = v; };
+    setV('wmText', o.wmText); setV('wmSize', o.wmSize); setV('wmOpa', o.wmOpa); setV('wmAng', o.wmAng);
+    setV('pnStart', o.pnStart); setV('pnSize', o.pnSize); setV('qSlider', o.q); setV('dpiSel', o.dpi);
+    if (o.wmColor) $('wmColor').value = o.wmColor;
+    const segSet = (segId, v) => {
+        if (!v) return;
+        const b = document.querySelector('#' + segId + ' button[data-v="' + v + '"]');
+        if (b) { b.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+    };
+    segSet('wmLayoutSeg', o.wmLayout); segSet('pnFmtSeg', o.pnFmt); segSet('convFmtSeg', o.fmt);
+    if (o.pnPos != null) {
+        const b = document.querySelector('#posGrid button[data-pos="' + o.pnPos + '"]');
+        if (b) { document.querySelectorAll('#posGrid button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); }); b.classList.add('active'); b.setAttribute('aria-pressed', 'true'); }
+    }
+    $('qVal').textContent = $('qSlider').value + '%';
+    $('qVal2').textContent = $('qSlider').value + '%';
+    $('wmOpaVal').textContent = $('wmOpa').value + '%';
+    $('wmOpaVal2').textContent = $('wmOpa').value + '%';
+    $('wmAngVal').textContent = $('wmAng').value + '°';
+    $('wmAngVal2').textContent = $('wmAng').value + '°';
+}
+
+function pushHistory(label, results) {
+    state.history = state.history || [];
+    state.history.unshift({ t: new Date(), label, items: results.map(r => ({ name: r.name, size: r.bytes.length, bytes: r.bytes })) });
+    if (state.history.length > 5) state.history.length = 5;
+    let total = 0;
+    for (const h of state.history) {
+        for (const it of h.items) total += it.size;
+        if (total > 150 * 1024 * 1024) { h.items = h.items.map(it => ({ name: it.name, size: it.size, bytes: null })); }
+    }
+    renderHistory();
+}
+
+function renderHistory() {
+    const old = document.querySelectorAll('.hist-title, .hist-list');
+    old.forEach(el => el.remove());
+    if (!state.history || !state.history.length) return;
+    const info = $('outInfo');
+    const title = document.createElement('p');
+    title.className = 'hist-title';
+    title.textContent = L('本会话导出记录', 'Session exports');
+    info.appendChild(title);
+    const list = document.createElement('div');
+    list.className = 'hist-list';
+    state.history.forEach((h, i) => {
+        const row = document.createElement('div');
+        row.className = 'hist-row';
+        const t = document.createElement('span');
+        t.className = 'h-time';
+        t.textContent = String(h.t.getHours()).padStart(2, '0') + ':' + String(h.t.getMinutes()).padStart(2, '0');
+        const lb = document.createElement('span');
+        lb.className = 'h-label';
+        const total = h.items.reduce((s, it) => s + it.size, 0);
+        lb.textContent = h.label + ' - ' + h.items.length + L(' 份 - ', ' file(s) - ') + fmtSize(total);
+        const btn = document.createElement('button');
+        const hasBytes = h.items.every(it => it.bytes);
+        btn.textContent = hasBytes ? L('重下载', 'Save again') : L('已释放', 'Freed');
+        btn.disabled = !hasBytes;
+        btn.onclick = () => downloadItems(h.items);
+        row.append(t, lb, btn);
+        list.appendChild(row);
+    });
+    info.appendChild(list);
+}
+
+async function downloadItems(items) {
+    if (items.length === 1) {
+        const r = items[0];
+        saveBlob(r.bytes, r.name, /\.zip$/i.test(r.name) ? 'application/zip' : /\.png$/i.test(r.name) ? 'image/png' : /\.jpe?g$/i.test(r.name) ? 'image/jpeg' : 'application/pdf');
+        return;
+    }
+    const z = zipSync(Object.fromEntries(items.map(it => [it.name, it.bytes])), { level: 4 });
+    saveBlob(z, 'pdf-studio-' + new Date().toISOString().slice(0, 10) + '.zip', 'application/zip');
+}
+
+function scheduleEstimate() {
+    clearTimeout(estTimer);
+    estTimer = setTimeout(runEstimate, 450);
+}
+
+async function runEstimate() {
+    const line = $('estLine');
+    if (state.mode !== 'compress' || !pdfFiles().length) { line.style.display = 'none'; return; }
+    const f = pdfFiles()[0];
+    const q = Number($('qSlider').value) / 100;
+    const dpi = Number($('dpiSel').value);
+    line.style.display = 'block';
+    $('estText').textContent = L('估算中…', 'Estimating…');
+    try {
+        const page = await f.jsDoc.getPage(1);
+        const vp = page.getViewport({ scale: dpi / 72 });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.floor(vp.width));
+        canvas.height = Math.max(1, Math.floor(vp.height));
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', q));
+        const est = blob.size * f.pageCount;
+        $('estText').textContent = L('按首页估算全部约 ' + fmtSize(est) + '（原 ' + fmtSize(f.size) + '）', 'Estimated ~' + fmtSize(est) + ' total, from page 1 (was ' + fmtSize(f.size) + ')');
+    } catch (e) {
+        line.style.display = 'none';
+    }
 }
 
 function drawFxOn(cv, pageIndex, totalPages) {
@@ -573,6 +712,24 @@ async function renderResultPreview(results) {
     const info = $('outInfo');
     const row = document.createElement('div');
     row.className = 'res-thumb-row';
+    if (state.mode === 'compress' && pdfFiles().length) {
+        try {
+            const src = pdfFiles()[0];
+            const page = await src.jsDoc.getPage(1);
+            const vp = page.getViewport({ scale: 0.22 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.floor(vp.width));
+            canvas.height = Math.max(1, Math.floor(vp.height));
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+            const cell = document.createElement('div');
+            cell.className = 'res-thumb-cell';
+            cell.appendChild(canvas);
+            const cap = document.createElement('span');
+            cap.textContent = L('压缩前 - ' + fmtSize(src.size), 'Before - ' + fmtSize(src.size));
+            cell.appendChild(cap);
+            row.appendChild(cell);
+        } catch (e) {}
+    }
     for (const pick of picks) {
         try {
             const jsDoc = await PDFJS.getDocument({ data: pick.bytes.slice(0) }).promise;
@@ -587,7 +744,7 @@ async function renderResultPreview(results) {
             cell.className = 'res-thumb-cell';
             cell.appendChild(canvas);
             const cap = document.createElement('span');
-            cap.textContent = pick.name + ' - ' + fmtSize(pick.bytes.length);
+            cap.textContent = (state.mode === 'compress' ? L('压缩后 - ', 'After - ') : '') + pick.name + ' - ' + fmtSize(pick.bytes.length);
             cap.title = pick.name;
             cell.appendChild(cap);
             row.appendChild(cell);
@@ -636,8 +793,8 @@ function buildOrgThumbs() {
     grid.ondragover = e => {
         e.preventDefault();
         const th = e.target.closest('.thumb');
-        grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
-        if (th) th.classList.add('drag-over');
+        grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over', 'dnd-line'));
+        if (th && grid.dataset.dragIdx !== th.dataset.orgIdx) th.classList.add('drag-over', 'dnd-line');
     };
     grid.ondrop = e => {
         e.preventDefault();
@@ -645,22 +802,137 @@ function buildOrgThumbs() {
         const from = grid.dataset.dragIdx;
         if (th && from !== undefined && from !== '') {
             const to = Number(th.dataset.orgIdx);
-            const moved = state.org.pages.splice(Number(from), 1)[0];
-            state.org.pages.splice(to, 0, moved);
+            if (Number(from) !== to) {
+                orgPush();
+                const moved = state.org.pages.splice(Number(from), 1)[0];
+                state.org.pages.splice(to, 0, moved);
+                state.orgSel.clear();
+            }
             buildOrgThumbs();
         }
         delete grid.dataset.dragIdx;
     };
     grid.ondragend = () => {
         grid.querySelectorAll('.drag-src').forEach(c => c.classList.remove('drag-src'));
-        grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+        grid.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over', 'dnd-line'));
         delete grid.dataset.dragIdx;
     };
+    grid.onclick = e => {
+        if (e.target.closest('.t-acts button')) return;
+        const th = e.target.closest('.thumb');
+        if (th) orgSelect(e, th);
+    };
+    grid.ondblclick = e => {
+        const th = e.target.closest('.thumb');
+        if (!th) return;
+        const idx = Number(th.dataset.orgIdx);
+        if (isNaN(idx) || !state.org.pages[idx]) return;
+        orgPush();
+        state.org.pages[idx].rot = (state.org.pages[idx].rot + 90) % 360;
+        buildOrgThumbs();
+    };
+    updateSelBar();
 }
 
 function initOrg() {
     const f = pdfFiles()[0];
+    state.orgHist = [];
+    state.orgFut = [];
+    state.orgSel = new Set();
+    state.orgAnchor = null;
     return { fileId: f.id, pages: Array.from({ length: f.pageCount }, (_, i) => ({ srcPage: i, rot: 0, deleted: false })) };
+}
+
+function orgPush() {
+    state.orgHist.push(JSON.stringify(state.org.pages));
+    if (state.orgHist.length > 60) state.orgHist.shift();
+    state.orgFut.length = 0;
+    updateOrgBtns();
+}
+
+function orgUndo() {
+    if (state.busy || !state.orgHist.length || !state.org) return;
+    state.orgFut.push(JSON.stringify(state.org.pages));
+    state.org.pages = JSON.parse(state.orgHist.pop());
+    state.orgSel.clear();
+    buildOrgThumbs();
+    updateOrgBtns();
+}
+
+function orgRedo() {
+    if (state.busy || !state.orgFut.length || !state.org) return;
+    state.orgHist.push(JSON.stringify(state.org.pages));
+    state.org.pages = JSON.parse(state.orgFut.pop());
+    state.orgSel.clear();
+    buildOrgThumbs();
+    updateOrgBtns();
+}
+
+function updateOrgBtns() {
+    state.orgHist = state.orgHist || [];
+    state.orgFut = state.orgFut || [];
+    state.orgSel = state.orgSel || new Set();
+    const show = state.mode === 'organize' && !!state.org;
+    $('undoBtn').style.display = show ? 'flex' : 'none';
+    $('redoBtn').style.display = show ? 'flex' : 'none';
+    $('undoBtn').disabled = !state.orgHist.length;
+    $('redoBtn').disabled = !state.orgFut.length;
+}
+
+function updateSelBar() {
+    const bar = $('selBar');
+    const n = state.orgSel ? state.orgSel.size : 0;
+    bar.style.display = n ? 'flex' : 'none';
+    $('selCount').textContent = L('已选 ' + n + ' 页', n + ' page(s) selected');
+}
+
+function orgSelect(e, th) {
+    const idx = Number(th.dataset.orgIdx);
+    if (e.shiftKey && state.orgAnchor != null) {
+        const a = Math.min(state.orgAnchor, idx), b = Math.max(state.orgAnchor, idx);
+        for (let i = a; i <= b; i++) {
+            if (!state.org.pages[i].deleted) state.orgSel.add(i);
+        }
+    } else if (e.ctrlKey || e.metaKey) {
+        if (state.orgSel.has(idx)) state.orgSel.delete(idx);
+        else state.orgSel.add(idx);
+        state.orgAnchor = idx;
+    } else {
+        state.orgSel = new Set([idx]);
+        state.orgAnchor = idx;
+    }
+    document.querySelectorAll('#thumbGrid .thumb').forEach(t => {
+        t.classList.toggle('sel', state.orgSel.has(Number(t.dataset.orgIdx)));
+    });
+    updateSelBar();
+}
+
+function moveSel(dir) {
+    if (!state.orgSel.size || !state.org) return;
+    const visIdx = state.org.pages.map((p, i) => p.deleted ? -1 : i).filter(i => i >= 0);
+    const selVis = visIdx.filter(i => state.orgSel.has(i));
+    if (!selVis.length) return;
+    orgPush();
+    if (dir === -1) {
+        for (const i of selVis) {
+            const pos = visIdx.indexOf(i);
+            if (pos === 0) continue;
+            const prev = visIdx[pos - 1];
+            if (state.orgSel.has(prev)) continue;
+            [state.org.pages[i], state.org.pages[prev]] = [state.org.pages[prev], state.org.pages[i]];
+            if (state.orgSel.has(i)) { state.orgSel.delete(i); state.orgSel.add(prev); }
+        }
+    } else {
+        for (const i of [...selVis].reverse()) {
+            const pos = visIdx.indexOf(i);
+            if (pos === visIdx.length - 1) continue;
+            const next = visIdx[pos + 1];
+            if (state.orgSel.has(next)) continue;
+            [state.org.pages[i], state.org.pages[next]] = [state.org.pages[next], state.org.pages[i]];
+            if (state.orgSel.has(i)) { state.orgSel.delete(i); state.orgSel.add(next); }
+        }
+    }
+    buildOrgThumbs();
 }
 
 function orgEvents() {
@@ -670,16 +942,117 @@ function orgEvents() {
         const th = btn.closest('.thumb');
         const idx = Number(th.dataset.orgIdx);
         const p = state.org.pages[idx];
-        if (btn.dataset.act === 'rot') p.rot = (p.rot + 90) % 360;
-        if (btn.dataset.act === 'del') p.deleted = true;
+        orgPush();
+        if (btn.dataset.act === 'rot') {
+            p.rot = (p.rot + 90) % 360;
+            if (state.orgSel.size > 1 && state.orgSel.has(idx)) {
+                state.org.pages.forEach((pp, i) => {
+                    if (state.orgSel.has(i) && i !== idx) pp.rot = (pp.rot + 90) % 360;
+                });
+            }
+        }
+        if (btn.dataset.act === 'del') {
+            p.deleted = true;
+            if (state.orgSel.size > 1 && state.orgSel.has(idx)) {
+                state.org.pages.forEach((pp, i) => {
+                    if (state.orgSel.has(i)) pp.deleted = true;
+                });
+                state.orgSel.clear();
+            }
+        }
         buildOrgThumbs();
     });
+    $('undoBtn').onclick = orgUndo;
+    $('redoBtn').onclick = orgRedo;
+    $('selRot').onclick = () => {
+        if (!state.orgSel.size) return;
+        orgPush();
+        state.org.pages.forEach((p, i) => {
+            if (state.orgSel.has(i)) p.rot = (p.rot + 90) % 360;
+        });
+        buildOrgThumbs();
+    };
+    $('selDel').onclick = () => {
+        if (!state.orgSel.size) return;
+        orgPush();
+        state.org.pages.forEach((p, i) => {
+            if (state.orgSel.has(i)) p.deleted = true;
+        });
+        state.orgSel.clear();
+        buildOrgThumbs();
+    };
+    $('selClear').onclick = () => {
+        state.orgSel.clear();
+        buildOrgThumbs();
+    };
+    $('selUp').onclick = () => moveSel(-1);
+    $('selDown').onclick = () => moveSel(1);
+    $('wmPresets').onclick = e => {
+        const b = e.target.closest('button[data-t]');
+        if (!b) return;
+        $('wmText').value = b.dataset.t;
+        scheduleFx(0);
+        scheduleSaveOpts();
+    };
     $('resetBtn').onclick = () => {
         if (state.mode === 'organize') state.org = null;
         clearResults();
         renderThumbs();
     };
 }
+
+document.addEventListener('keydown', e => {
+    const tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (state.mode !== 'organize' || !state.org) return;
+    const k = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'z') {
+        e.preventDefault();
+        orgUndo();
+    } else if ((e.ctrlKey || e.metaKey) && (k === 'y' || (e.shiftKey && k === 'z'))) {
+        e.preventDefault();
+        orgRedo();
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (state.orgSel.size) {
+            e.preventDefault();
+            orgPush();
+            state.org.pages.forEach((p, i) => {
+                if (state.orgSel.has(i)) p.deleted = true;
+            });
+            state.orgSel.clear();
+            buildOrgThumbs();
+        }
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const vis = state.org.pages.map((p, i) => p.deleted ? -1 : i).filter(i => i >= 0);
+        if (!vis.length) return;
+        e.preventDefault();
+        if (e.shiftKey && state.orgAnchor != null) {
+            if (state.orgExt == null) state.orgExt = vis.indexOf(state.orgAnchor);
+            state.orgExt = e.key === 'ArrowLeft' ? Math.max(0, state.orgExt - 1) : Math.min(vis.length - 1, state.orgExt + 1);
+            const newIdx = vis[state.orgExt];
+            const a = Math.min(state.orgAnchor, newIdx), b = Math.max(state.orgAnchor, newIdx);
+            state.orgSel = new Set();
+            for (let i = a; i <= b; i++) if (!state.org.pages[i].deleted) state.orgSel.add(i);
+        } else {
+            state.orgExt = null;
+            let cur = state.orgAnchor != null && vis.includes(state.orgAnchor) ? vis.indexOf(state.orgAnchor) : (e.key === 'ArrowLeft' ? vis.length : -1);
+            cur = e.key === 'ArrowLeft' ? Math.max(0, cur - 1) : Math.min(vis.length - 1, cur + 1);
+            state.orgAnchor = vis[cur];
+            state.orgSel = new Set([state.orgAnchor]);
+        }
+        document.querySelectorAll('#thumbGrid .thumb').forEach(t => {
+            t.classList.toggle('sel', state.orgSel.has(Number(t.dataset.orgIdx)));
+        });
+        updateSelBar();
+    }
+});
+
+window.addEventListener('beforeunload', e => {
+    if (state.mode === 'organize' && state.org && state.orgHist.length) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 
 function parseRange(str, max) {
     const out = [];
@@ -718,6 +1091,7 @@ async function runMerge() {
         const pages = await out.copyPages(src, src.getPageIndices());
         pages.forEach(p => out.addPage(p));
         setStatus(L('正在合并…', 'Merging…'), '', (i + 1) / pdfs.length);
+        await yieldFrame();
     }
     const bytes = await out.save();
     return [{ name: 'merged.pdf', bytes }];
@@ -793,6 +1167,7 @@ async function compressOne(f, q, dpi, onPct) {
         const p = out.addPage([base.width, base.height]);
         p.drawImage(img, { x: 0, y: 0, width: base.width, height: base.height });
         onPct(i / n);
+        await yieldFrame();
     }
     return out.save();
 }
@@ -893,7 +1268,8 @@ async function drawWatermark(doc, opts) {
         font = await doc.embedFont(PLIB.StandardFonts.HelveticaBold);
     }
     const [r, g, b] = opts.color;
-    pages.forEach(page => {
+    for (let pi = 0; pi < pages.length; pi++) {
+        const page = pages[pi];
         const { width, height } = page.getSize();
         const w = font.widthOfTextAtSize(opts.text, opts.size);
         const h = font.heightAtSize(opts.size);
@@ -920,7 +1296,8 @@ async function drawWatermark(doc, opts) {
                 }
             }
         }
-    });
+        if (pi % 8 === 7) await yieldFrame();
+    }
 }
 
 async function runWatermark() {
@@ -974,7 +1351,8 @@ async function runPagenum() {
             font = await doc.embedFont(PLIB.StandardFonts.Helvetica);
         }
         const margin = 20;
-        pages.forEach((page, pi) => {
+        for (let pi = 0; pi < pages.length; pi++) {
+            const page = pages[pi];
             const num = start + pi;
             const text = fmt === 'plain' ? String(num)
                 : fmt === 'pageX' ? L('第 ' + num + ' 页', 'Page ' + num)
@@ -990,7 +1368,8 @@ async function runPagenum() {
             if (pos.ay === 'middle') y = (height - thh) / 2;
             if (pos.ay === 'bottom') y = margin;
             page.drawText(text, { x, y, size, font, color: PLIB.rgb(0.35, 0.35, 0.35) });
-        });
+            if (pi % 10 === 9) await yieldFrame();
+        }
         const bytes = await doc.save();
         results.push({ name: baseName(f.name) + '-numbered.pdf', bytes });
         setStatus(L('正在加页码…', 'Numbering pages…'), '', (fi + 1) / pdfs.length);
@@ -1012,26 +1391,21 @@ function showResults(results) {
     setStatus(L('完成', 'Done'), 'ok');
     setTimeout(clearStatus, 3000);
     renderResultPreview(results);
+    pushHistory(MODE_LABEL[state.mode] ? MODE_LABEL[state.mode]() : '', results);
 }
 
 async function downloadResults() {
     if (!state.results) return;
-    if (state.results.length === 1) {
-        const r = state.results[0];
-        const isZip = /\.zip$/i.test(r.name);
-        saveBlob(r.bytes, r.name, isZip ? 'application/zip' : /\.png$/i.test(r.name) ? 'image/png' : /\.jpe?g$/i.test(r.name) ? 'image/jpeg' : 'application/pdf');
-        return;
-    }
-    const items = {};
+    const items = [];
     const used = new Set();
     for (const r of state.results) {
         let n = r.name;
         let k = 2;
         while (used.has(n)) n = r.name.replace(/(\.\w+)$/, '-' + k++ + '$1');
         used.add(n);
-        items[n] = r.bytes;
+        items.push({ name: n, bytes: r.bytes });
     }
-    saveBlob(zipSync(items, { level: 4 }), 'pdf-studio-' + new Date().toISOString().slice(0, 10) + '.zip', 'application/zip');
+    await downloadItems(items);
 }
 
 function clearResults() {
@@ -1101,7 +1475,9 @@ function tabEvents() {
     $('qSlider').oninput = function () {
         $('qVal').textContent = this.value + '%';
         $('qVal2').textContent = this.value + '%';
+        scheduleEstimate();
     };
+    $('dpiSel').addEventListener('change', scheduleEstimate);
     $('wmOpa').oninput = function () {
         $('wmOpaVal').textContent = this.value + '%';
         $('wmOpaVal2').textContent = this.value + '%';
@@ -1115,9 +1491,11 @@ function tabEvents() {
     $('posGrid').onclick = e => {
         const b = e.target.closest('button[data-pos]');
         if (!b) return;
-        document.querySelectorAll('#posGrid button').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('#posGrid button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed', 'true');
         scheduleFx(0);
+        scheduleSaveOpts();
     };
     $('pnStart').addEventListener('input', () => scheduleFx());
     $('pnSize').addEventListener('input', () => scheduleFx());
@@ -1161,10 +1539,16 @@ function dzEvents() {
 }
 
 async function boot() {
+    loadOpts();
     dzEvents();
     chipEvents();
     tabEvents();
     orgEvents();
+    document.querySelectorAll('#posGrid button').forEach(b => b.setAttribute('aria-pressed', b.classList.contains('active') ? 'true' : 'false'));
+    document.querySelectorAll('.opt-block input, .opt-block select, #qSlider, #dpiSel').forEach(el => {
+        el.addEventListener('change', scheduleSaveOpts);
+        el.addEventListener('input', scheduleSaveOpts);
+    });
     refreshUI(false);
     if (window.LabBoot) { window.LabBoot.drive(); window.LabBoot.hide(); }
 }
