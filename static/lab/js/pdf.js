@@ -125,6 +125,7 @@ function baseName(n) {
 
 async function loadFileObjects(list) {
     if (state.busy) return;
+    if (list.length > 1) setStatus(L('正在载入 ' + list.length + ' 个文件…', 'Loading ' + list.length + ' file(s)…'), '', 0);
     const added = [];
     for (const file of list) {
         if (file.size > MAX_SIZE) {
@@ -203,6 +204,7 @@ function chipEvents() {
             const f = state.files[i];
             if (f.jsDoc) f.jsDoc.destroy();
             if (f.objUrl) URL.revokeObjectURL(f.objUrl);
+            if (f.bmp && f.bmp.close) f.bmp.close();
             state.files.splice(i, 1);
         } else if (act === 'up' && i > 0) {
             [state.files[i - 1], state.files[i]] = [state.files[i], state.files[i - 1]];
